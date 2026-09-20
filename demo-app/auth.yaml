@@ -1,0 +1,51 @@
+---
+# auth Deployment — simulates an authentication service
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: auth
+  namespace: demo
+  labels:
+    app: auth
+    tier: backend
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: auth
+  template:
+    metadata:
+      labels:
+        app: auth
+        tier: backend
+    spec:
+      containers:
+        - name: auth
+          image: hashicorp/http-echo:latest
+          args:
+            - "-text=Auth service OK — token valid"
+            - "-listen=:7070"
+          ports:
+            - containerPort: 7070
+          resources:
+            requests:
+              cpu: "10m"
+              memory: "16Mi"
+            limits:
+              cpu: "100m"
+              memory: "64Mi"
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: auth
+  namespace: demo
+  labels:
+    app: auth
+spec:
+  selector:
+    app: auth
+  ports:
+    - port: 7070
+      targetPort: 7070
+      name: http

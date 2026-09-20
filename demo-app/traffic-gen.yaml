@@ -1,0 +1,42 @@
+---
+# traffic-generator — continuously calls frontend → backend → auth
+# This generates the HTTP traffic that Beyla will observe via eBPF.
+# Uses a simple busybox/wget loop — no special tools required.
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: traffic-gen
+  namespace: demo
+  labels:
+    app: traffic-gen
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: traffic-gen
+  template:
+    metadata:
+      labels:
+        app: traffic-gen
+    spec:
+      containers:
+        - name: traffic-gen
+          image: busybox:latest
+          command:
+            - /bin/sh
+            - -c
+            - |
+              echo "Traffic generator started"
+              while true; do
+                wget -q -O /dev/null http://frontend:8080/ 2>&1 || true
+                wget -q -O /dev/null http://backend:5678/ 2>&1 || true
+                wget -q -O /dev/null http://auth:7070/ 2>&1 || true
+                sleep 2
+              done
+          resources:
+            requests:
+              cpu: "5m"
+              memory: "8Mi"
+            limits:
+              cpu: "50m"
+              memory: "32Mi"

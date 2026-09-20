@@ -1,0 +1,82 @@
+{
+  "annotations": { "list": [] },
+  "description": "CMCKO — Application Traffic: HTTP flows between frontend, backend and auth services",
+  "editable": true,
+  "graphTooltip": 1,
+  "id": null,
+  "panels": [
+    {
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "fieldConfig": {
+        "defaults": { "unit": "reqps", "color": { "mode": "palette-classic" }, "custom": { "lineWidth": 2 } }
+      },
+      "gridPos": { "h": 8, "w": 12, "x": 0, "y": 0 },
+      "id": 1,
+      "targets": [
+        {
+          "expr": "sum(rate(http_client_request_duration_seconds_count{namespace=\"demo\"}[2m])) by (k8s_deployment_name, server_address)",
+          "legendFormat": "{{k8s_deployment_name}} → {{server_address}}",
+          "refId": "A"
+        }
+      ],
+      "title": "Outbound HTTP Requests — Client View (Service Map)",
+      "type": "timeseries"
+    },
+    {
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "fieldConfig": {
+        "defaults": { "unit": "s" }
+      },
+      "gridPos": { "h": 8, "w": 12, "x": 12, "y": 0 },
+      "id": 2,
+      "targets": [
+        {
+          "expr": "histogram_quantile(0.99, sum(rate(http_client_request_duration_seconds_bucket{namespace=\"demo\"}[2m])) by (le, k8s_deployment_name, server_address))",
+          "legendFormat": "p99 {{k8s_deployment_name}} → {{server_address}}",
+          "refId": "A"
+        }
+      ],
+      "title": "Client-Side Latency p99 — per Service Call",
+      "type": "timeseries"
+    },
+    {
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "gridPos": { "h": 8, "w": 24, "x": 0, "y": 8 },
+      "id": 3,
+      "options": {
+        "sortBy": [{ "desc": true, "displayName": "Count" }]
+      },
+      "targets": [
+        {
+          "expr": "sum(increase(http_client_request_duration_seconds_count{namespace=\"demo\"}[5m])) by (k8s_deployment_name, server_address, http_request_method, http_response_status_code)",
+          "legendFormat": "",
+          "refId": "A",
+          "instant": true
+        }
+      ],
+      "title": "HTTP Calls — Source / Destination / Method / Status (last 5m)",
+      "type": "table",
+      "transformations": [
+        { "id": "labelsToFields", "options": {} },
+        { "id": "organize", "options": {
+          "renameByName": {
+            "k8s_deployment_name": "Source Service",
+            "server_address": "Destination",
+            "http_request_method": "Method",
+            "http_response_status_code": "Status",
+            "Value": "Count"
+          }
+        }}
+      ]
+    }
+  ],
+  "refresh": "30s",
+  "schemaVersion": 38,
+  "tags": ["cmcko", "phase0", "traffic", "service-map"],
+  "templating": { "list": [] },
+  "time": { "from": "now-30m", "to": "now" },
+  "timezone": "browser",
+  "title": "CMCKO — Application Traffic",
+  "uid": "cmcko-app-traffic",
+  "version": 1
+}

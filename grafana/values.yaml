@@ -1,0 +1,73 @@
+# Grafana Helm values — Phase 0
+# Reference: https://github.com/grafana/helm-charts/tree/main/charts/grafana
+
+# ──────────────────────────────────────────────────────────────────────────────
+# Access
+# ──────────────────────────────────────────────────────────────────────────────
+service:
+  type: NodePort
+  nodePort: 30000
+
+# Default admin credentials (change in production!)
+adminUser: admin
+adminPassword: admin
+
+# ──────────────────────────────────────────────────────────────────────────────
+# Resources — keep it minimal
+# ──────────────────────────────────────────────────────────────────────────────
+resources:
+  requests:
+    cpu: "50m"
+    memory: "128Mi"
+  limits:
+    cpu: "200m"
+    memory: "256Mi"
+
+# No persistent storage needed for a demo
+persistence:
+  enabled: false
+
+# ──────────────────────────────────────────────────────────────────────────────
+# Auto-provision Prometheus datasource
+# ──────────────────────────────────────────────────────────────────────────────
+datasources:
+  datasources.yaml:
+    apiVersion: 1
+    datasources:
+      - name: Prometheus
+        type: prometheus
+        uid: prometheus
+        url: http://prometheus-server.monitoring.svc.cluster.local
+        isDefault: true
+        access: proxy
+        jsonData:
+          httpMethod: POST
+          timeInterval: "15s"
+
+# ──────────────────────────────────────────────────────────────────────────────
+# Auto-provision dashboards folder
+# ──────────────────────────────────────────────────────────────────────────────
+# Dashboard auto-provisioning via ConfigMap
+# The ConfigMap 'grafana-dashboard-cluster-overview' is created by:
+#   kubectl create configmap grafana-dashboard-cluster-overview \
+#     --from-file=cluster-overview.json=grafana/dashboards/cluster-overview.json \
+#     -n monitoring
+dashboardProviders:
+  dashboardproviders.yaml:
+    apiVersion: 1
+    providers:
+      - name: "cmcko"
+        orgId: 1
+        folder: "CMCKO"
+        type: file
+        disableDeletion: false
+        editable: true
+        options:
+          path: /var/lib/grafana/dashboards/cmcko
+
+dashboardsConfigMaps:
+  cmcko: "grafana-dashboard-cluster-overview"
+
+# Plugins intentionally left empty — kind nodes have no internet access.
+# grafana-piechart-panel is built-in since Grafana 8.
+plugins: []

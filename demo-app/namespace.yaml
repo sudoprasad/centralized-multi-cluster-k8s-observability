@@ -1,0 +1,9 @@
+---
+# Namespace for demo microservices
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: demo
+  labels:
+    # Beyla uses this label to discover pods to instrument
+    instrumentation: beyla
