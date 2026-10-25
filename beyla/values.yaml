@@ -1,62 +1,58 @@
-# Grafana Beyla Helm values — Phase 0 (single cluster)
-# Reference: https://grafana.com/docs/beyla/latest/setup/kubernetes-helm/
-#
-# KEY DESIGN PRINCIPLE:
-#   Beyla uses eBPF to observe application traffic WITHOUT modifying app code.
-#   It runs as a DaemonSet so it covers every node in the cluster.
+# Grafana Beyla Helm values — Phase 2 (L7 Application Observability + RED Metrics)
+# Target: cluster-01
+# Requires Linux host / WSL2 for userspace eBPF uprobes.
 
-# ──────────────────────────────────────────────────────────────────────────────
-# Beyla core configuration
-# ──────────────────────────────────────────────────────────────────────────────
 config:
   data:
-    # Log level: debug is useful during initial setup
     log_level: info
 
-    # Prometheus exporter — Beyla exposes metrics on :9090/metrics
     prometheus_export:
       port: 9090
       path: /metrics
 
-    # Which processes/services to instrument.
-    # discover.instrument restricts Beyla to the 'demo' namespace only,
-    # which avoids accidentally observing kube-system or monitoring stack.
+    prometheus_features:
+      - application
+      - network
+      - network_flow_packets
+      - stats
+      - stats_tcp_retransmits
+      - stats_tcp_rtt
+
+    # L7 Discovery: inspect Go/Python/Node runtimes and HTTP services in demo namespace
     discovery:
       instrument:
         - k8s_namespace: "demo"
+          open_ports: "8080,5678,7070"
 
-    # Kubernetes metadata enrichment:
-    # Attaches pod, namespace, node, deployment labels to every metric.
+    # Route pattern grouping to aggregate endpoints into clean metrics
+    routes:
+      unmatched: heuristic
+      patterns:
+        - /
+        - /auth
+        - /backend
+        - /api/v1/*
+
     attributes:
       kubernetes:
         enable: true
 
-    # Network metrics (L4 — TCP/UDP flows):
-    # Enabled so we can see inter-service network traffic.
+    # Retain L4 network flow metrics alongside L7
     network:
       enable: true
       cidrs: []
 
-# ──────────────────────────────────────────────────────────────────────────────
-# Kubernetes deployment options
-# ──────────────────────────────────────────────────────────────────────────────
+preset: application
 
-# Beyla MUST run as a DaemonSet to cover all nodes
-preset: daemonset
-
-# Expose a Service so Prometheus can scrape /metrics
 service:
   enabled: true
 
-# ServiceMonitor disabled — we use prometheus-community/prometheus (simple chart),
-# not kube-prometheus-stack, so ServiceMonitor CRD is not installed.
-# Prometheus scrapes Beyla directly via the scrape_configs in prometheus/values.yaml.
 serviceMonitor:
   enabled: false
 
-# ──────────────────────────────────────────────────────────────────────────────
-# Resource limits — conservative for limited hardware
-# ──────────────────────────────────────────────────────────────────────────────
+env:
+  BEYLA_KUBE_CLUSTER_NAME: "cluster-01"
+
 resources:
   requests:
     cpu: "100m"
@@ -65,16 +61,12 @@ resources:
     cpu: "500m"
     memory: "512Mi"
 
-# ──────────────────────────────────────────────────────────────────────────────
-# Beyla requires host-level access to load eBPF programs
-# ──────────────────────────────────────────────────────────────────────────────
 podSecurityContext: {}
 
 securityContext:
   privileged: true
   runAsUser: 0
 
-# Mount /sys and /proc from the host so eBPF can access kernel structures
 extraVolumes:
   - name: sys-fs-bpf
     hostPath:
@@ -92,12 +84,3 @@ extraVolumeMounts:
   - name: kernel-debug
     mountPath: /sys/kernel/debug
     readOnly: false
-
-# tolerations: allow Beyla to run on control-plane nodes in a single-node cluster
-tolerations:
-  - key: "node-role.kubernetes.io/control-plane"
-    operator: "Exists"
-    effect: "NoSchedule"
-  - key: "node-role.kubernetes.io/master"
-    operator: "Exists"
-    effect: "NoSchedule"

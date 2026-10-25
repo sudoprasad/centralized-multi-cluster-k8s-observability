@@ -1,39 +1,28 @@
-# Cluster 01 — README
+# Cluster 01 (System 1 — macOS OrbStack Edge Cluster)
 
-Local kind cluster for Phase 0 (single-cluster proof of concept).
+Single-node Kind cluster running on macOS Apple Silicon via OrbStack.
 
-## Specs
+## Specs & Published Ports
 
-| Property | Value |
-|----------|-------|
-| Name | `cluster-01` |
-| Type | kind (Kubernetes IN Docker) |
-| Nodes | 1 control-plane |
-| Kubernetes | v1.37.0 |
-| Grafana NodePort | :30000 |
-| Prometheus NodePort | :30001 |
+| Port | Protocol | Target / Purpose |
+|---|---|---|
+| `:30080` | HTTP / TCP | **Frontend Ingress** (Apache JMeter external load target) |
+| `:30090` | HTTP / TCP | **Beyla eBPF Metrics Exporter** (Scraped by System 3 Central Hub) |
+| `:30000` | HTTP / TCP | *Optional* Local Grafana (via `extras/local-learning-monitoring`) |
+| `:30001` | HTTP / TCP | *Optional* Local Prometheus (via `extras/local-learning-monitoring`) |
 
-## Commands
+## Quick Commands
 
 ```bash
-# Create
-kind create cluster --name cluster-01 --config kind-config.yaml
-
 # Set context
 kubectl config use-context kind-cluster-01
 
-# Status
-kubectl get nodes
-kubectl get pods --all-namespaces
+# Inspect Pods
+kubectl get pods -A
 
-# Delete
-kind delete cluster --name cluster-01
+# Test JMeter Ingress
+curl http://localhost:30080/
+
+# Test Beyla Metrics Exporter
+curl http://localhost:30090/metrics | head -n 20
 ```
-
-## Namespaces
-
-| Namespace | Contents |
-|-----------|---------|
-| `demo` | frontend, backend, auth, traffic-gen |
-| `beyla` | Grafana Beyla DaemonSet |
-| `monitoring` | Prometheus, Grafana |

@@ -26,7 +26,6 @@ spec:
           # and logs every request — no instrumentation needed
           image: hashicorp/http-echo:latest
           args:
-            - "-text=Hello from frontend! Backend is at http://backend:5678"
             - "-listen=:8080"
           ports:
             - containerPort: 8080
@@ -46,9 +45,11 @@ metadata:
   labels:
     app: frontend
 spec:
+  type: NodePort
   selector:
     app: frontend
   ports:
     - port: 8080
       targetPort: 8080
+      nodePort: 30080
       name: http

@@ -1,6 +1,6 @@
 {
   "annotations": { "list": [] },
-  "description": "CMCKO — Cluster Overview: L4 network flows and service topology from Beyla eBPF (no app instrumentation needed)",
+  "description": "CMCKO — Multi-Cluster Overview: L4 network flows and service topology federated via Thanos from Beyla eBPF across all clusters",
   "editable": true,
   "graphTooltip": 1,
   "id": null,
@@ -9,7 +9,7 @@
       "collapsed": false,
       "gridPos": { "h": 1, "w": 24, "x": 0, "y": 0 },
       "id": 100,
-      "title": "📊 Service-to-Service Network Traffic (L4 via eBPF)",
+      "title": "📊 Service-to-Service Network Traffic (L4 via eBPF across Clusters)",
       "type": "row"
     },
     {
@@ -30,8 +30,8 @@
       "targets": [
         {
           "datasource": { "type": "prometheus", "uid": "prometheus" },
-          "expr": "rate(beyla_network_flow_bytes_total{direction=\"request\", k8s_src_namespace=\"demo\", k8s_dst_namespace=\"demo\"}[2m])",
-          "legendFormat": "{{k8s_src_owner_name}} → {{k8s_dst_owner_name}}",
+          "expr": "rate(beyla_network_flow_bytes_total{cluster=~\"$cluster\", direction=\"request\", k8s_src_namespace=\"demo\", k8s_dst_namespace=\"demo\"}[2m])",
+          "legendFormat": "[{{cluster}}] {{k8s_src_owner_name}} → {{k8s_dst_owner_name}}",
           "refId": "A"
         }
       ],
@@ -54,8 +54,8 @@
       "targets": [
         {
           "datasource": { "type": "prometheus", "uid": "prometheus" },
-          "expr": "beyla_network_flow_bytes_total{direction=\"request\", k8s_src_namespace=\"demo\", k8s_dst_namespace=\"demo\"}",
-          "legendFormat": "→ {{k8s_dst_owner_name}}",
+          "expr": "beyla_network_flow_bytes_total{cluster=~\"$cluster\", direction=\"request\", k8s_src_namespace=\"demo\", k8s_dst_namespace=\"demo\"}",
+          "legendFormat": "[{{cluster}}] → {{k8s_dst_owner_name}}",
           "refId": "A",
           "instant": true
         }
@@ -75,6 +75,7 @@
       "fieldConfig": {
         "defaults": { "unit": "bytes" },
         "overrides": [
+          { "matcher": { "id": "byName", "options": "Cluster" }, "properties": [{ "id": "custom.width", "value": 110 }] },
           { "matcher": { "id": "byName", "options": "Source Service" }, "properties": [{ "id": "custom.width", "value": 160 }] },
           { "matcher": { "id": "byName", "options": "Destination Service" }, "properties": [{ "id": "custom.width", "value": 160 }] }
         ]
@@ -88,13 +89,13 @@
       "targets": [
         {
           "datasource": { "type": "prometheus", "uid": "prometheus" },
-          "expr": "beyla_network_flow_bytes_total{direction=\"request\", k8s_src_namespace=\"demo\"}",
+          "expr": "beyla_network_flow_bytes_total{cluster=~\"$cluster\", direction=\"request\", k8s_src_namespace=\"demo\"}",
           "legendFormat": "",
           "refId": "A",
           "instant": true
         }
       ],
-      "title": "Service Communication Table (eBPF L4 — no app instrumentation)",
+      "title": "Service Communication Table (Multi-Cluster eBPF L4)",
       "type": "table",
       "transformations": [
         { "id": "labelsToFields", "options": { "mode": "columns" } },
@@ -103,6 +104,7 @@
           "options": {
             "excludeByName": { "Time": true, "direction": true, "k8s_cluster_name": true },
             "renameByName": {
+              "cluster": "Cluster",
               "k8s_src_namespace": "Src Namespace",
               "k8s_src_owner_name": "Source Service",
               "k8s_src_owner_type": "Src Type",
@@ -131,7 +133,7 @@
       "targets": [
         {
           "datasource": { "type": "prometheus", "uid": "prometheus" },
-          "expr": "sum(rate(beyla_network_flow_bytes_total{direction=\"request\", k8s_src_namespace=\"demo\"}[2m]))",
+          "expr": "sum(rate(beyla_network_flow_bytes_total{cluster=~\"$cluster\", direction=\"request\", k8s_src_namespace=\"demo\"}[2m]))",
           "legendFormat": "Demo outbound bytes/s",
           "refId": "A"
         }
@@ -148,7 +150,7 @@
       "targets": [
         {
           "datasource": { "type": "prometheus", "uid": "prometheus" },
-          "expr": "sum(beyla_network_flow_bytes_total{direction=\"request\", k8s_src_namespace=\"demo\"})",
+          "expr": "sum(beyla_network_flow_bytes_total{cluster=~\"$cluster\", direction=\"request\", k8s_src_namespace=\"demo\"})",
           "legendFormat": "Total bytes since start",
           "refId": "A"
         }
@@ -165,7 +167,7 @@
       "targets": [
         {
           "datasource": { "type": "prometheus", "uid": "prometheus" },
-          "expr": "count(count by (k8s_src_owner_name) (beyla_network_flow_bytes_total{k8s_src_namespace=\"demo\"}))",
+          "expr": "count(count by (cluster, k8s_src_owner_name) (beyla_network_flow_bytes_total{cluster=~\"$cluster\", k8s_src_namespace=\"demo\"}))",
           "legendFormat": "Active services",
           "refId": "A"
         }
@@ -176,17 +178,22 @@
   ],
   "refresh": "15s",
   "schemaVersion": 38,
-  "tags": ["cmcko", "phase0", "beyla", "ebpf", "network"],
+  "tags": ["cmcko", "phase1", "beyla", "ebpf", "network", "multi-cluster"],
   "templating": {
     "list": [
       {
-        "current": {},
+        "current": {
+          "selected": true,
+          "text": "All",
+          "value": "$__all"
+        },
         "datasource": { "type": "prometheus", "uid": "prometheus" },
         "definition": "label_values(beyla_network_flow_bytes_total, cluster)",
         "hide": 0,
         "includeAll": true,
+        "allValue": ".*",
+        "multi": true,
         "label": "Cluster",
-        "multi": false,
         "name": "cluster",
         "query": { "query": "label_values(beyla_network_flow_bytes_total, cluster)", "refId": "Q" },
         "refresh": 2,
@@ -199,5 +206,5 @@
   "timezone": "browser",
   "title": "CMCKO — Cluster Overview (L4 Network)",
   "uid": "cmcko-cluster-overview",
-  "version": 2
+  "version": 3
 }

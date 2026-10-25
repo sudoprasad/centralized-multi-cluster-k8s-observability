@@ -1,5 +1,4 @@
-# Grafana Helm values — Phase 0
-# Reference: https://github.com/grafana/helm-charts/tree/main/charts/grafana
+# Grafana Helm values — Phase 1 (multi-cluster hub, queries via Thanos Querier)
 
 # ──────────────────────────────────────────────────────────────────────────────
 # Access
@@ -34,10 +33,13 @@ datasources:
   datasources.yaml:
     apiVersion: 1
     datasources:
-      - name: Prometheus
+      - name: Thanos
         type: prometheus
         uid: prometheus
-        url: http://prometheus-server.monitoring.svc.cluster.local
+        # Thanos Querier service — same namespace as Grafana (monitoring)
+        # This replaces the direct Prometheus URL from Phase 0.
+        # The Querier federates data from ALL cluster Sidecars transparently.
+        url: http://thanos-querier-query.monitoring.svc.cluster.local:10902
         isDefault: true
         access: proxy
         jsonData:
@@ -66,7 +68,7 @@ dashboardProviders:
           path: /var/lib/grafana/dashboards/cmcko
 
 dashboardsConfigMaps:
-  cmcko: "grafana-dashboard-cluster-overview"
+  cmcko: "grafana-dashboards-cmcko"
 
 # Plugins intentionally left empty — kind nodes have no internet access.
 # grafana-piechart-panel is built-in since Grafana 8.

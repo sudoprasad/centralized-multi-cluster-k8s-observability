@@ -1,0 +1,91 @@
+#!/usr/bin/env bash
+# =============================================================================
+# CMCKO — System 1 (macOS MBA M4 with OrbStack)
+# Single Cluster Edge Deployment: cluster-01
+# Architecture: Option A (Pure Edge Node — Prometheus ONLY on System 3)
+# Zero-Instrumentation eBPF Observability (4 L4 + 4 L7 Metrics)
+#
+# USAGE:
+#   chmod +x scripts/deploy.sh
+#   ./scripts/deploy.sh
+# =============================================================================
+
+set -euo pipefail
+
+GREEN='\033[0;32m'; YELLOW='\033[1;33m'; RED='\033[0;31m'; CYAN='\033[0;36m'; NC='\033[0m'
+log()  { echo -e "${CYAN}[$(date +%H:%M:%S)] $*${NC}"; }
+pass() { echo -e "${GREEN}✅ $*${NC}"; }
+warn() { echo -e "${YELLOW}⚠️  $*${NC}"; }
+fail() { echo -e "${RED}❌ $*${NC}"; exit 1; }
+
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+ROOT="$(cd "$SCRIPT_DIR/.." && pwd)"
+
+# -----------------------------------------------------------------------------
+# STEP 1: Verify docker context and single cluster-01
+# -----------------------------------------------------------------------------
+log "STEP 1: Initializing cluster-01 on OrbStack..."
+docker context use orbstack 2>/dev/null || true
+if ! kind get clusters 2>/dev/null | grep -q "^cluster-01$"; then
+  kind create cluster --config "$ROOT/clusters/cluster-01/kind-config.yaml"
+  pass "cluster-01 created"
+else
+  pass "cluster-01 already exists"
+fi
+
+kubectl config use-context kind-cluster-01
+kubectl wait --for=condition=Ready node --all --timeout=120s
+pass "cluster-01 node is Ready"
+
+# -----------------------------------------------------------------------------
+# STEP 2: Deploy target microservices (frontend NodePort 30080)
+# -----------------------------------------------------------------------------
+log "STEP 2: Deploying target microservices (frontend on NodePort 30080)..."
+kubectl create namespace demo --dry-run=client -o yaml | kubectl apply -f -
+kubectl apply -f "$ROOT/target-app/"
+kubectl rollout status deployment/frontend -n demo --timeout=120s
+kubectl rollout status deployment/backend -n demo --timeout=120s
+kubectl rollout status deployment/auth -n demo --timeout=120s
+pass "Target microservices deployed (Traffic driven exclusively by external JMeter)"
+
+# -----------------------------------------------------------------------------
+# STEP 3: Deploy Beyla eBPF DaemonSet (4 L4 + 4 L7 Metrics)
+# -----------------------------------------------------------------------------
+log "STEP 3: Deploying Grafana Beyla eBPF DaemonSet on cluster-01..."
+kubectl create namespace beyla --dry-run=client -o yaml | kubectl apply -f -
+helm repo add grafana https://grafana.github.io/helm-charts 2>/dev/null || true
+helm repo update grafana
+
+helm upgrade --install beyla grafana/beyla \
+  --namespace beyla \
+  --values "$ROOT/beyla/values.yaml" \
+  --wait --timeout 3m
+
+# Apply explicit NodePort 30090 for external Prometheus scraping from System 3
+kubectl apply -f "$ROOT/beyla/beyla-nodeport.yaml"
+pass "Beyla eBPF active with L4 & L7 metrics exposed on NodePort 30090"
+
+# -----------------------------------------------------------------------------
+# Output status and connection info
+# -----------------------------------------------------------------------------
+MAC_IP=$(ipconfig getifaddr en0 2>/dev/null || ipconfig getifaddr en1 2>/dev/null || echo "localhost")
+
+echo ""
+echo "═══════════════════════════════════════════════════════════════════"
+echo "  CMCKO System 1 (macOS OrbStack) Edge Cluster is Ready!"
+echo "═══════════════════════════════════════════════════════════════════"
+echo "  Cluster:                 cluster-01 (Single cluster on Mac)"
+echo "  Mac LAN IP:              $MAC_IP"
+echo ""
+echo "  [EXTERNAL INGRESS - Apache JMeter Load Target]:"
+echo "  Target URL:              http://$MAC_IP:30080/"
+echo "                           http://localhost:30080/"
+echo ""
+echo "  [METRICS EGRESS - For System 3 Central Scraper]:"
+echo "  Beyla NodePort:          http://$MAC_IP:30090/metrics"
+echo ""
+echo "  [OPTIONAL LOCAL LEARNING DISPLAY]:"
+echo "  To inspect metrics locally on this Mac, run:"
+echo "    ./extras/local-learning-monitoring/install.sh"
+echo "  (Starts local Grafana at http://localhost:30000 and Prom at :30001)"
+echo "═══════════════════════════════════════════════════════════════════"

@@ -1,0 +1,20 @@
+global:
+  scrape_interval: 5s
+  evaluation_interval: 5s
+
+scrape_configs:
+  # System 1: macOS Cluster (OrbStack)
+  - job_name: "cmcko-system1-mac"
+    static_configs:
+      - targets: ["SYSTEM_1_IP:30090"]
+        labels:
+          cluster: "cluster-01"
+          system: "macos-orbstack"
+
+  # System 2: Windows Cluster (WSL2 k3s)
+  - job_name: "cmcko-system2-wsl"
+    static_configs:
+      - targets: ["SYSTEM_2_IP:30090"]
+        labels:
+          cluster: "cluster-02"
+          system: "windows-wsl2"

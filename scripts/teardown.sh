@@ -1,13 +1,20 @@
 #!/usr/bin/env bash
 # =============================================================================
-# teardown.sh — Remove everything created by setup-phase0.sh
+# teardown.sh — Remove CMCKO System 1 (macOS OrbStack) Kind Cluster
 # =============================================================================
-# WARNING: This deletes the entire kind cluster and all data.
-# Only run this when you want a completely clean reset.
+# WARNING: Deletes the local kind cluster and all local telemetry data.
 # =============================================================================
 
 set -euo pipefail
 
-CLUSTER_NAME="${1:-cluster-01}"
-echo "Deleting kind cluster: $CLUSTER_NAME"
-kind delete cluster --name "$CLUSTER_NAME" && echo "Done."
+echo "Tearing down CMCKO System 1 (cluster-01)..."
+docker context use orbstack 2>/dev/null || true
+
+if kind get clusters 2>/dev/null | grep -q "^cluster-01$"; then
+  echo "Deleting kind cluster: cluster-01"
+  kind delete cluster --name cluster-01
+else
+  echo "cluster-01 does not exist, skipping."
+fi
+
+echo "Teardown complete."
