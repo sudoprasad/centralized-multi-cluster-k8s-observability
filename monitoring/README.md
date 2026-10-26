@@ -11,10 +11,10 @@ It scrapes eBPF Beyla metrics directly from your microservices and can also fede
 ### 1. Deploy Monitoring Stack
 ```bash
 # Monitor local System 1 (Mac):
-./extras/local-learning-monitoring/install.sh
+./monitoring/install.sh
 
 # Or monitor BOTH System 1 (Mac) and System 2 (WSL2):
-./extras/local-learning-monitoring/install.sh <SYSTEM_2_IP>
+./monitoring/install.sh <SYSTEM_2_IP>
 ```
 
 ### 2. Access UIs
@@ -30,5 +30,5 @@ It scrapes eBPF Beyla metrics directly from your microservices and can also fede
 
 To remove Prometheus and Grafana and free ~400MB RAM:
 ```bash
-./extras/local-learning-monitoring/uninstall.sh
+./monitoring/uninstall.sh
 ```

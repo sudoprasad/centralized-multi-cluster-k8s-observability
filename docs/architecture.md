@@ -48,4 +48,4 @@ The CMCKO platform operates in an **Option A Centralized Pull Model**:
 2. **eBPF Kernel Passivity**: Grafana Beyla attaches non-intrusively to kernel tracepoints, socket operations, and userspace uprobes.
 3. **Pure Edge Nodes**: Edge clusters run no Prometheus TSDB engines, minimizing CPU and RAM overhead.
 4. **External Client Traffic**: In-cluster traffic generators are deactivated (`replicas: 0`). External load is injected via **Apache JMeter** hitting NodePort `30080`.
-5. **Decoupled Local Learning**: An optional local Prometheus and Grafana instance can be installed on System 1 (`extras/local-learning-monitoring/`) for offline study without impacting the distributed pipeline.
+5. **Decoupled Local Observability**: A dedicated local Prometheus and Grafana instance can be installed on System 1 (`monitoring/`) for direct observability, HPA verification, and testing without impacting external scrapers.

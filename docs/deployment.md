@@ -79,11 +79,11 @@ chmod +x scripts/setup-system2-wsl.sh
 ### Deployment:
 1. Deploy Prometheus (:30001) and Grafana (:30000) directly on cluster-01:
    ```bash
-   ./extras/local-learning-monitoring/install.sh
+   ./monitoring/install.sh
    ```
    *(Or optionally pass `<SYSTEM_2_IP>` to also scrape System 2 over Tailscale)*:
    ```bash
-   ./extras/local-learning-monitoring/install.sh 100.x.y.z
+   ./monitoring/install.sh 100.x.y.z
    ```
 2. Access Local Observability:
    - **Grafana Dashboard**: `http://localhost:30000` (Login: `admin` / `admin`)

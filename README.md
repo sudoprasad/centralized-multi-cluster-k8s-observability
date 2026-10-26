@@ -61,7 +61,7 @@ visualization and cross-cluster comparison.
 ### 4. Local Prometheus & Grafana Monitoring (System 1)
 ```bash
 # Deploys Prometheus (:30001) & Grafana (:30000) with Live Pods, HPA & L4/L7 Dashboards:
-./extras/local-learning-monitoring/install.sh
+./monitoring/install.sh
 
 # Open Grafana: http://localhost:30000 (admin / admin)
 # Open Prometheus: http://localhost:30001
@@ -71,20 +71,20 @@ visualization and cross-cluster comparison.
 
 ---
 
-## 📊 Monitored Metrics (Live Pods, HPA Autoscaling, 4 L4 + 4 L7)
+## 📊 Monitored Metrics (Pod Lifecycle, HPA Autoscaling, 4 L4 + 4 L7)
 
 | Category | Telemetry Metric | Scraped PromQL Query | Description / Purpose |
 | :--- | :--- | :--- | :--- |
-| **Cluster State** | **Live Pod Inventory** | `count by (cluster, service_name) (target_info{k8s_namespace_name="demo"})` | Real-time active pod count across microservices |
-| **Autoscaling** | **HPA Replica Scaling** | `count by (cluster) (target_info{service_name="frontend"})` | Visualizes 1 $\rightarrow$ 5 replica scale-up under load |
-| **L4 Transport** | **1. Network Throughput** | `sum by (cluster, k8s_src_owner_name) (rate(beyla_network_flow_bytes_total[1m]))` | Real-time byte bandwidth sent/received per service |
-| **L4 Transport** | **2. Connection Count** | `count by (cluster) (count by (cluster, k8s_src_owner_name, k8s_dst_owner_name) (rate(beyla_network_flow_bytes_total[1m]) > 0))` | Active inter-service TCP communication channels |
-| **L4 Transport** | **3. Flow Intensity** | `sum by (cluster, k8s_dst_owner_name) (rate(beyla_network_flow_bytes_total[1m]))` | Distribution of inbound traffic across services |
-| **L4 Transport** | **4. Network Latency** | `histogram_quantile(0.95, sum by (le, cluster) (rate(http_server_request_duration_seconds_bucket[1m]))) * 0.15` | Kernel TCP handshake / RTT latency estimate |
-| **L7 Application** | **1. Request Rate** | `sum by (cluster, service_name) (rate(http_server_request_duration_seconds_count[1m]))` | Requests per second (RPS) per microservice |
+| **Autoscaling** | **HPA Controller State** | `kube_horizontalpodautoscaler_status_current_replicas{namespace="demo"}` | Desired vs Current replicas & Min/Max boundary tracking |
+| **Pod Lifecycle** | **Deployment Readiness** | `sum by (deployment) (kube_deployment_status_replicas_ready{namespace="demo"})` | Ready vs unavailable pod transitions during traffic spikes |
+| **L4 Transport** | **1. Network Throughput** | `sum by (cluster, k8s_src_owner_name) (rate(beyla_network_flow_bytes_total{direction="request"}[1m]))` | Real-time directional byte bandwidth (Sent vs Recv) |
+| **L4 Transport** | **2. TCP Socket Table** | `sum(node_sockstat_TCP_inuse)` & `sum(node_sockstat_TCP_alloc)` | Kernel-level active TCP sockets and memory table under load |
+| **L4 Transport** | **3. Service Mesh Flow Matrix** | `sum by (k8s_src_owner_name, k8s_dst_owner_name) (rate(beyla_network_flow_bytes_total[1m]))` | Directional traffic distribution matrix between microservices |
+| **L4 Transport** | **4. Node Physical NIC I/O** | `sum by (device) (rate(node_network_receive_bytes_total{device="eth0"}[1m]))` | Real physical network interface bandwidth (RX/TX) |
+| **L7 Application** | **1. Request Rate (RPS)** | `sum by (cluster, service_name) (rate(http_server_request_duration_seconds_count[1m]))` | Requests per second (RPS) per microservice via eBPF |
 | **L7 Application** | **2. Request Latency** | `histogram_quantile(0.95, sum by (le, cluster, service_name) (rate(http_server_request_duration_seconds_bucket[1m])))` | p50, p95, and p99 response duration distributions |
-| **L7 Application** | **3. Error Rate** | `sum by (cluster, service_name) (rate(http_server_request_duration_seconds_count{http_response_status_code=~"[45].."}[1m]))` | 4xx client and 5xx server HTTP error rates |
-| **L7 Application** | **4. Payload Size** | `sum by (cluster, service_name) (rate(http_server_request_body_size_bytes_sum[1m]))` | Inbound request and outbound response body volumes |
+| **L7 Application** | **3. Error Rate** | `sum by (cluster, service_name) (rate(http_server_request_duration_seconds_count{http_response_status_code=~"[45].."}[1m]))` | 4xx client and 5xx server HTTP error rates & status ratio |
+| **L7 Application** | **4. Payload Volumes** | `sum by (cluster, service_name) (rate(http_server_request_body_size_bytes_sum[1m]))` | Inbound request and outbound response HTTP body transfer |
 
 ---
 

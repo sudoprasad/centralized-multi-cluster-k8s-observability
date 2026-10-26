@@ -6,10 +6,10 @@
 #
 # USAGE:
 #   # Deploy for local System 1 only:
-#   ./extras/local-learning-monitoring/install.sh
+#   ./monitoring/install.sh
 #
 #   # Deploy and also scrape System 2 (WSL2) over Tailscale:
-#   ./extras/local-learning-monitoring/install.sh <SYSTEM_2_IP>
+#   ./monitoring/install.sh <SYSTEM_2_IP>
 # =============================================================================
 
 set -euo pipefail
@@ -22,7 +22,7 @@ warn() { echo -e "${YELLOW}⚠️  $*${NC}"; }
 SYSTEM_2_IP="${1:-}"
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-ROOT="$(cd "$SCRIPT_DIR/../.." && pwd)"
+ROOT="$(cd "$SCRIPT_DIR/.." && pwd)"
 
 log "Verifying Kubernetes context on cluster-01..."
 kubectl config use-context kind-cluster-01
@@ -88,5 +88,5 @@ echo "  Dashboard included:      CMCKO — Unified Multi-Cluster eBPF Observabil
 echo "                           (Live Pods, HPA Autoscaling, 4 L4, 4 L7 Metrics)"
 echo ""
 echo "  To uninstall and free resources:"
-echo "    ./extras/local-learning-monitoring/uninstall.sh"
+echo "    ./monitoring/uninstall.sh"
 echo "═══════════════════════════════════════════════════════════════════"

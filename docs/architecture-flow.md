@@ -77,9 +77,9 @@ The architecture distributes responsibilities across **three physical/virtual ma
 - The in-cluster mock generator (`traffic-gen`) is deactivated (`replicas: 0`).
 - True external load (concurrency, think times, realistic HTTP requests, and intentional 4xx error paths) is injected via **Apache JMeter** hitting NodePort `30080`.
 
-### Rule 4: Isolated Local Learning Subsystem (System 1)
-- For personal study and offline validation, System 1 can optionally spin up local Prometheus and Grafana instances via `extras/local-learning-monitoring/`.
-- This subsystem is completely decoupled from the production Option A pipeline and can be cleanly uninstalled at any time.
+### Rule 4: Dedicated Local Monitoring Subsystem (System 1)
+- For direct monitoring, HPA verification, and standalone testing, System 1 runs local Prometheus and Grafana instances via `monitoring/`.
+- This subsystem provides full live observability of L4/L7 telemetry and can be cleanly uninstalled at any time.
 
 ---
 
@@ -133,10 +133,10 @@ Captured directly from Linux network sockets and TCP state transitions:
 
 | # | Metric Name | Concept & Purpose | Kernel eBPF Hook | PromQL Metric Name | Triggered in JMeter By |
 |---|---|---|---|---|---|
-| **1** | **Network Throughput** | Bytes sent & received across cluster interfaces | Socket buffers / TC classifier | `befa_network_flow_bytes_total` | High thread count, large response bodies |
-| **2** | **Active Connections** | Count of concurrent TCP sessions | `sock_ops` TCP state transitions | `befa_network_flow_stats` | Rapid connection opening / closing |
-| **3** | **Packet Retransmissions** | Network packet loss & connection degradation | `tcp_retransmit_skb` tracepoint | `befa_network_flow_stats_tcp_retransmits_total` | Network congestion or traffic bursts |
-| **4** | **Round-Trip Time (RTT)** | Kernel-level TCP round-trip latency | TCP socket RTT sampling | `befa_network_flow_stats_tcp_rtt_seconds` | TCP ACK response timing over LAN |
+| **1** | **Network Throughput** | Bytes sent & received across cluster interfaces | Socket buffers / TC classifier | `beyla_network_flow_bytes_total` | High thread count, large response bodies |
+| **2** | **Active TCP Sockets** | Kernel-level active TCP sockets and memory table | `sockstat` TCP state tracking | `node_sockstat_TCP_inuse` | Concurrent HTTP/TCP connections |
+| **3** | **Service Mesh Flow Matrix** | Directional inter-service communication matrix | Socket flow pairing | `beyla_network_flow_bytes_total` | Service-to-service calls (frontend -> backend) |
+| **4** | **Physical Interface I/O** | Network card ingress & egress bandwidth (RX/TX) | Linux NIC subsystem | `node_network_receive_bytes_total` | Total network load traversing node interface |
 
 ---
 
@@ -156,10 +156,9 @@ Captured via userspace eBPF uprobes attached to the application binary runtime:
 
 | System | Role | Technology Stack | Inbound Ports | Outbound Access |
 |---|---|---|---|---|
-| **System 1** | Edge Cluster 01 | macOS M4, OrbStack, Kind | **30080** (JMeter target)<br>**30090** (Beyla /metrics) | None (passive target) |
+| **System 1** | Edge Cluster 01 | macOS M4, OrbStack, Kind | **30080** (JMeter target)<br>**30090** (Beyla /metrics)<br>**30000** (Grafana UI)<br>**30001** (Prometheus UI) | None (passive target) |
 | **System 2** | Edge Cluster 02 | Windows 10/11, WSL2 Ubuntu, k3s | **30080** (JMeter target)<br>**30090** (Beyla /metrics) | None (passive target) |
 | **External** | Load Generator | Apache JMeter / Docker runner | *None* | Hits `http://<SYS1_IP>:30080`<br>Hits `http://<SYS2_IP>:30080` |
-| **System 3** | Central Display Hub | Windows 10/11, WSL2, Docker Compose | **3000** (Grafana UI)<br>**9090** (Prometheus UI) | Scrapes `http://<SYS1_IP>:30090`<br>Scrapes `http://<SYS2_IP>:30090` |
 
 ---
 
@@ -170,8 +169,8 @@ Captured via userspace eBPF uprobes attached to the application binary runtime:
 # 1. Deploy the edge cluster:
 ./scripts/deploy-system1-mac.sh
 
-# 2. (Optional) Install local learning display if desired:
-./extras/local-learning-monitoring/install.sh
+# 2. Deploy local Prometheus (:30001) & Grafana (:30000):
+./monitoring/install.sh
 ```
 
 ### On System 2 (Windows WSL2):
@@ -180,13 +179,13 @@ Captured via userspace eBPF uprobes attached to the application binary runtime:
 ./scripts/setup-system2-wsl.sh
 ```
 
-### On System 1 (Local Prometheus & Grafana Monitoring Stack):
+### Accessing Observability on System 1:
 ```bash
-# Launch Prometheus (:30001) and Grafana (:30000):
-./extras/local-learning-monitoring/install.sh
-
-# Access Grafana:
+# Open Grafana:
 http://localhost:30000 (admin / admin)
+
+# Open Prometheus:
+http://localhost:30001
 
 # Note: External scrapers (System 3) scrape directly via Tailscale:
 # http://<SYSTEM_1_TAILSCALE_IP>:30090/metrics
