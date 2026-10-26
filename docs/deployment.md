@@ -96,23 +96,27 @@ Internal mock generators (`traffic-gen`) are disabled (`replicas: 0`). Real HTTP
 
 ### Run via Shell Script (macOS / Linux):
 ```bash
-# Target macOS cluster locally:
-./jmeter/run-jmeter.sh localhost 30080 15 300
+# High-Stress Load (0ms think time, default):
+./jmeter/run-jmeter.sh localhost 30080 30 300 5 0
 
-# Target over LAN:
-./jmeter/run-jmeter.sh 192.168.31.9 30080 20 300
+# Target over Tailscale / LAN:
+./jmeter/run-jmeter.sh 100.110.71.94 30080 30 300 5 0
+
+# Realistic user simulation (200ms think time):
+./jmeter/run-jmeter.sh 100.110.71.94 30080 15 300 5 200
 ```
 
 ### Run via PowerShell (Windows):
 ```powershell
-.\jmeter\run-jmeter.ps1 -TargetHost "192.168.31.9" -TargetPort 30080 -Threads 20 -Duration 300
+# High-stress load:
+.\jmeter\run-jmeter.ps1 -TargetHost "100.110.71.94" -TargetPort 30080 -Threads 30 -Duration 300 -ThinkTime 0
 ```
 
 ### Run via Docker (No JMeter installation required):
 ```bash
 docker run --rm -i -v "$PWD/jmeter":/jmeter justb4/jmeter:latest \
   -n -t /jmeter/cmcko-traffic-test.jmx \
-  -Jtarget.host="192.168.31.9" -Jtarget.port="30080" -Jthreads=20 -Jduration=300
+  -Jtarget.host="100.110.71.94" -Jtarget.port="30080" -Jthreads=30 -Jduration=300 -Jthinktime=0
 ```
 
 ---

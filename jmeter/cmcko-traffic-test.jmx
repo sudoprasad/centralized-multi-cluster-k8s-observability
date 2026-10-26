@@ -33,6 +33,11 @@
             <stringProp name="Argument.value">${__P(duration,300)}</stringProp>
             <stringProp name="Argument.metadata">=</stringProp>
           </elementProp>
+          <elementProp name="THINK_TIME" elementType="Argument">
+            <stringProp name="Argument.name">THINK_TIME</stringProp>
+            <stringProp name="Argument.value">${__P(thinktime,0)}</stringProp>
+            <stringProp name="Argument.metadata">=</stringProp>
+          </elementProp>
         </collectionProp>
       </elementProp>
     </TestPlan>
@@ -79,9 +84,9 @@
         </HTTPSamplerProxy>
         <hashTree/>
 
-        <!-- Constant Timer: Pauses between requests (simulates realistic think time) -->
-        <ConstantTimer guiclass="ConstantTimerGui" testclass="ConstantTimer" testname="Think Time (200ms)" enabled="true">
-          <stringProp name="ConstantTimer.delay">200</stringProp>
+        <!-- Constant Timer: Pauses between requests (0ms for high-volume stress testing, or configurable via thinktime property) -->
+        <ConstantTimer guiclass="ConstantTimerGui" testclass="ConstantTimer" testname="Think Time (${THINK_TIME}ms)" enabled="true">
+          <stringProp name="ConstantTimer.delay">${THINK_TIME}</stringProp>
         </ConstantTimer>
         <hashTree/>
 
@@ -100,8 +105,8 @@
         </HTTPSamplerProxy>
         <hashTree/>
 
-        <ConstantTimer guiclass="ConstantTimerGui" testclass="ConstantTimer" testname="Think Time (150ms)" enabled="true">
-          <stringProp name="ConstantTimer.delay">150</stringProp>
+        <ConstantTimer guiclass="ConstantTimerGui" testclass="ConstantTimer" testname="Think Time (${THINK_TIME}ms)" enabled="true">
+          <stringProp name="ConstantTimer.delay">${THINK_TIME}</stringProp>
         </ConstantTimer>
         <hashTree/>
 
@@ -120,8 +125,8 @@
         </HTTPSamplerProxy>
         <hashTree/>
 
-        <ConstantTimer guiclass="ConstantTimerGui" testclass="ConstantTimer" testname="Think Time (300ms)" enabled="true">
-          <stringProp name="ConstantTimer.delay">300</stringProp>
+        <ConstantTimer guiclass="ConstantTimerGui" testclass="ConstantTimer" testname="Think Time (${THINK_TIME}ms)" enabled="true">
+          <stringProp name="ConstantTimer.delay">${THINK_TIME}</stringProp>
         </ConstantTimer>
         <hashTree/>
 

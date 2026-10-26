@@ -46,8 +46,11 @@ visualization and cross-cluster comparison.
 
 ### 2. External Traffic (Apache JMeter)
 ```bash
-# Generate external load (15 threads hitting frontend NodePort 30080):
-./jmeter/run-jmeter.sh localhost 30080 15 300
+# Generate high-stress load (20-30 threads, 0ms think time, matching k6 throughput):
+./jmeter/run-jmeter.sh localhost 30080 30 300 5 0
+
+# Or run realistic user simulation (15 threads, 200ms think time):
+./jmeter/run-jmeter.sh localhost 30080 15 300 5 200
 ```
 
 ### 3. System 2: Windows (WSL2 k3s Edge Cluster)

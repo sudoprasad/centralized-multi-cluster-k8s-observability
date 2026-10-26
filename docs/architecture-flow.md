@@ -193,9 +193,9 @@ http://localhost:3000 (admin / admin)
 
 ### From Traffic Generator:
 ```bash
-# Run JMeter load against System 1:
-./jmeter/run-jmeter.sh <SYSTEM_1_IP> 30080 20 300
+# Run high-stress JMeter load against System 1 (0ms think time):
+./jmeter/run-jmeter.sh <SYSTEM_1_IP> 30080 30 300 5 0
 
-# Run JMeter load against System 2:
-./jmeter/run-jmeter.sh <SYSTEM_2_IP> 30080 20 300
+# Run high-stress JMeter load against System 2 (0ms think time):
+./jmeter/run-jmeter.sh <SYSTEM_2_IP> 30080 30 300 5 0
 ```
