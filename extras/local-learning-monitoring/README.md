@@ -1,22 +1,34 @@
-# Optional Local Learning Monitoring (System 1)
+# Local Prometheus & Grafana Monitoring (System 1)
 
-> ⚠️ **Note**: In the main production architecture (**Option A**), all Prometheus scraping and Grafana dashboards live exclusively on **System 3 (Windows WSL2 Hub)**. System 1 and System 2 run as lightweight edge nodes running only the demo microservices and Beyla eBPF agents.
+This directory provides a **self-contained Prometheus and Grafana monitoring stack** running directly on your macOS cluster (`cluster-01`).
 
-This directory is provided as an **isolated, optional tool for personal learning & quick local validation** on your Mac.
+It scrapes eBPF Beyla metrics directly from your microservices and can also federate telemetry from **System 2 (Windows WSL2)** over Tailscale/LAN.
 
 ---
 
-## 🚀 Usage
+## 🚀 Quick Start
 
-### To Install Local Grafana & Prometheus:
+### 1. Deploy Monitoring Stack
 ```bash
+# Monitor local System 1 (Mac):
 ./extras/local-learning-monitoring/install.sh
-```
-- **Grafana Dashboard**: `http://localhost:30000` (Login: `admin` / `admin`)
-- **Prometheus UI**: `http://localhost:30001`
 
-### To Uninstall (Revert to Pure Option A Edge Node):
+# Or monitor BOTH System 1 (Mac) and System 2 (WSL2):
+./extras/local-learning-monitoring/install.sh <SYSTEM_2_IP>
+```
+
+### 2. Access UIs
+- **Grafana Dashboard**: [http://localhost:30000](http://localhost:30000) (Login: `admin` / `admin`)
+  - Auto-loaded with: **`CMCKO — Unified Multi-Cluster eBPF Observability`**
+  - Features: Live Pods Inventory, HPA Autoscaling Curve, 4 L4 base metrics, 4 L7 RED metrics.
+- **Prometheus UI**: [http://localhost:30001](http://localhost:30001)
+- **Raw Beyla Metrics Egress**: [http://localhost:30090/metrics](http://localhost:30090/metrics)
+
+---
+
+## 🛑 Teardown / Uninstall
+
+To remove Prometheus and Grafana and free ~400MB RAM:
 ```bash
 ./extras/local-learning-monitoring/uninstall.sh
 ```
-This frees ~500 MB RAM and ensures System 1 runs strictly as a telemetry producer.

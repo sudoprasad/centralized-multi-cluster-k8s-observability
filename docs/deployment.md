@@ -74,19 +74,25 @@ chmod +x scripts/setup-system2-wsl.sh
 
 ---
 
-## ⚡ System 3: Windows (WSL2) — Metrics Display & Dashboard Hub
+## ⚡ Prometheus & Grafana Monitoring (System 1 Local Stack)
 
 ### Deployment:
-1. Edit `system3-hub/prometheus.yml` and replace `SYSTEM_1_IP` and `SYSTEM_2_IP` with the LAN IPs of Systems 1 and 2.
-2. Launch the monitoring hub via Docker Compose:
+1. Deploy Prometheus (:30001) and Grafana (:30000) directly on cluster-01:
    ```bash
-   cd system3-hub
-   docker compose up -d
+   ./extras/local-learning-monitoring/install.sh
    ```
-3. Open Grafana:
-   - **URL**: `http://localhost:3000` (or `http://<SYSTEM3_IP>:3000`)
-   - **Login**: `admin` / `admin`
-   - Pre-loaded with the **CMCKO Unified L4 Network & L7 Application Observability** dashboard.
+   *(Or optionally pass `<SYSTEM_2_IP>` to also scrape System 2 over Tailscale)*:
+   ```bash
+   ./extras/local-learning-monitoring/install.sh 100.x.y.z
+   ```
+2. Access Local Observability:
+   - **Grafana Dashboard**: `http://localhost:30000` (Login: `admin` / `admin`)
+   - **Prometheus UI**: `http://localhost:30001`
+   - Pre-loaded with: **`CMCKO — Unified Multi-Cluster eBPF Observability (L4 + L7 + HPA)`**
+
+### External Scrapers (System 3):
+Any external Prometheus scraper (such as System 3) can pull your Beyla eBPF metrics directly from:
+`http://<YOUR_TAILSCALE_IP>:30090/metrics`
 
 ---
 

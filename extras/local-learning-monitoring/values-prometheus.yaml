@@ -1,67 +1,45 @@
-# Prometheus Helm values — Phase 0
-# Using prometheus-community/prometheus (simple, not the full kube-prometheus-stack)
-# Reference: https://github.com/prometheus-community/helm-charts/tree/main/charts/prometheus
-#
-# KEY FIX: Do NOT override serverFiles.prometheus.yml.global — the chart already
-# generates a global block and a second one causes "field global already set" crash.
-# Use 'server.global' for global config and 'extraScrapeConfigs' for custom jobs.
+# Prometheus Helm values for Local Monitoring on System 1 (macOS)
+# Chart: prometheus-community/prometheus
 
-# ──────────────────────────────────────────────────────────────────────────────
-# Server configuration
-# ──────────────────────────────────────────────────────────────────────────────
 server:
-  # Expose via NodePort so we can access Prometheus from localhost
   service:
     type: NodePort
     nodePort: 30001
 
-  # Lightweight persistent storage — 2Gi is enough for a demo
+  # In-memory storage for fastest local demo startup
   persistentVolume:
-    enabled: true
-    size: 2Gi
+    enabled: false
 
-  # Retention: 7 days is plenty for a demo project
-  retention: "7d"
+  retention: "3d"
 
-  # Conservative resources
   resources:
     requests:
       cpu: "100m"
-      memory: "256Mi"
+      memory: "128Mi"
     limits:
       cpu: "500m"
       memory: "512Mi"
 
-  # Global settings — scrape interval and cluster identity label
-  # This is the CORRECT place; do NOT also set global inside serverFiles.
   global:
-    scrape_interval: 15s
-    evaluation_interval: 15s
+    scrape_interval: 5s
+    evaluation_interval: 5s
     external_labels:
       cluster: "cluster-01"
 
-# ──────────────────────────────────────────────────────────────────────────────
-# Disable components we don't need to keep things light
-# ──────────────────────────────────────────────────────────────────────────────
 alertmanager:
   enabled: false
 
 prometheus-pushgateway:
   enabled: false
 
-# ──────────────────────────────────────────────────────────────────────────────
-# kube-state-metrics — adds pod/deployment/namespace metadata
-# ──────────────────────────────────────────────────────────────────────────────
+# Deploy kube-state-metrics for pod and HPA metadata
 kube-state-metrics:
   enabled: true
 
-# ──────────────────────────────────────────────────────────────────────────────
-# Extra scrape configs — appended to the chart's default prometheus.yml.
-# This is the correct way to add custom jobs without touching serverFiles.
-# ──────────────────────────────────────────────────────────────────────────────
 extraScrapeConfigs: |
-  # Scrape Beyla metrics via its Kubernetes Service endpoints
-  - job_name: "beyla"
+  # Scrape Beyla eBPF metrics from local cluster-01
+  - job_name: "cmcko-system1-mac"
+    scrape_interval: 5s
     honor_labels: true
     kubernetes_sd_configs:
       - role: endpoints
@@ -75,9 +53,24 @@ extraScrapeConfigs: |
       - source_labels: [__meta_kubernetes_pod_name]
         action: replace
         target_label: pod
-      - source_labels: [__meta_kubernetes_namespace]
-        action: replace
-        target_label: namespace
-      - source_labels: [__meta_kubernetes_node_name]
-        action: replace
-        target_label: node
+      - target_label: cluster
+        replacement: "cluster-01"
+    metric_relabel_configs:
+      - source_labels: [k8s_cluster_name]
+        target_label: cluster
+        regex: "(.+)"
+        replacement: "${1}"
+
+  # Scrape System 2 (WSL2 k3s) over Tailscale / LAN
+  - job_name: "cmcko-system2-wsl"
+    scrape_interval: 5s
+    static_configs:
+      - targets: ["SYSTEM_2_IP:30090"]
+        labels:
+          cluster: "cluster-02"
+          system: "windows-wsl2"
+    metric_relabel_configs:
+      - source_labels: [k8s_cluster_name]
+        target_label: cluster
+        regex: "(.+)"
+        replacement: "${1}"

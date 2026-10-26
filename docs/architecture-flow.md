@@ -180,15 +180,16 @@ Captured via userspace eBPF uprobes attached to the application binary runtime:
 ./scripts/setup-system2-wsl.sh
 ```
 
-### On System 3 (Windows WSL2 Hub):
+### On System 1 (Local Prometheus & Grafana Monitoring Stack):
 ```bash
-# 1. Update targets in system3-hub/prometheus.yml with System 1 & 2 LAN IPs
-# 2. Launch the Central Hub:
-cd system3-hub
-docker compose up -d
+# Launch Prometheus (:30001) and Grafana (:30000):
+./extras/local-learning-monitoring/install.sh
 
-# 3. Access Grafana:
-http://localhost:3000 (admin / admin)
+# Access Grafana:
+http://localhost:30000 (admin / admin)
+
+# Note: External scrapers (System 3) scrape directly via Tailscale:
+# http://<SYSTEM_1_TAILSCALE_IP>:30090/metrics
 ```
 
 ### From Traffic Generator:

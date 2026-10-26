@@ -58,12 +58,15 @@ visualization and cross-cluster comparison.
 ./scripts/setup-system2-wsl.sh
 ```
 
-### 4. System 3: Windows (WSL2 Metrics Display Hub)
+### 4. Local Prometheus & Grafana Monitoring (System 1)
 ```bash
-cd system3-hub
-# Update SYSTEM_1_IP and SYSTEM_2_IP in prometheus.yml, then:
-docker compose up -d
-# Open Grafana: http://localhost:3000 (admin / admin)
+# Deploys Prometheus (:30001) & Grafana (:30000) with Live Pods, HPA & L4/L7 Dashboards:
+./extras/local-learning-monitoring/install.sh
+
+# Open Grafana: http://localhost:30000 (admin / admin)
+# Open Prometheus: http://localhost:30001
+# Any external system (e.g. System 3) can also scrape your Beyla metrics directly at:
+# http://<YOUR_TAILSCALE_IP>:30090/metrics
 ```
 
 ---
