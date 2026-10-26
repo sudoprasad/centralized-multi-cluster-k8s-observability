@@ -154,7 +154,7 @@ Captured via userspace eBPF uprobes attached to the application binary runtime:
 |---|---|---|---|---|---|
 | **1** | **Request Rate (Rate)** | HTTP requests per second (RPS) per route | `net/http` server entry uprobes | `http_server_request_duration_seconds_count` | Concurrency & JMeter loop frequency |
 | **2** | **Latency (Duration)** | Response time percentiles (p50, p95, p99) | `net/http` return uprobes | `http_server_request_duration_seconds_bucket` | Think time, downstream service latency |
-| **3** | **Error Rate (Errors)** | 4xx client and 5xx server HTTP failure rates & status ratio | HTTP response status code inspector | `http_server_request_duration_seconds_count{http_response_status_code=~"[45].*"}` | `GET /api/unknown` intentional error sampler |
+| **3** | **Error Rate (Errors)** | 4xx client and 5xx server HTTP failure rates & status ratio | HTTP response status code inspector | `http_server_request_duration_seconds_count{http_response_status_code=~"[45].*"}` | `GET /api/unknown` (404) & `GET /status/503` (503) error samplers |
 | **4** | **Payload Size** | Request & response byte volume per service | HTTP Content-Length & body parser | `http_server_request_body_size_bytes_sum` | Payload data transmitted |
 
 ---

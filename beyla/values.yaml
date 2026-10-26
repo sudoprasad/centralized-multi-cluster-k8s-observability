@@ -30,6 +30,8 @@ config:
         - /
         - /auth
         - /backend
+        - /status/*
+        - /api/*
         - /api/v1/*
 
     attributes:

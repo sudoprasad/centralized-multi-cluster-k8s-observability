@@ -1,6 +1,6 @@
 ---
 # frontend Deployment — serves as the entry point for the demo app
-# Generates HTTP traffic to the backend service
+# Generates HTTP traffic and simulates realistic client (4xx) and server (5xx) responses
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -22,11 +22,7 @@ spec:
     spec:
       containers:
         - name: frontend
-          # hashicorp/http-echo: tiny Go binary that replies with a static message
-          # and logs every request — no instrumentation needed
-          image: hashicorp/http-echo:latest
-          args:
-            - "-listen=:8080"
+          image: mccutchen/go-httpbin:latest
           ports:
             - containerPort: 8080
           resources:
@@ -53,3 +49,4 @@ spec:
       targetPort: 8080
       nodePort: 30080
       name: http
+
