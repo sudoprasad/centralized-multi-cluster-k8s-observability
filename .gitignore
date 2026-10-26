@@ -21,3 +21,4 @@ charts/
 # Temp
 tmp/
 scratch/
+*.log
