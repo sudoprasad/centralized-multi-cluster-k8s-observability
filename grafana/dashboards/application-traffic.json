@@ -1,15 +1,199 @@
 {
   "annotations": { "list": [] },
-  "description": "CMCKO — Centralized Multi-Cluster Observability: 4 Layer 4 (Transport) & 4 Layer 7 (Application) Metrics across clusters via eBPF & Thanos",
+  "description": "CMCKO — Unified Multi-Cluster Observability: Live Pods & HPA Autoscaling, 4 L4 Transport Metrics, and 4 L7 Application RED Metrics via eBPF Beyla",
   "editable": true,
+  "fiscalYearStartMonth": 0,
   "graphTooltip": 1,
   "id": null,
+  "links": [],
+  "liveNow": true,
   "panels": [
     {
       "collapsed": false,
       "gridPos": { "h": 1, "w": 24, "x": 0, "y": 0 },
       "id": 100,
-      "title": "🌐 Layer 4 (Network / Transport): 1. Throughput & 2. Connections",
+      "title": "🌟 System Health & Autoscaling Overview (Multi-Cluster KPI)",
+      "type": "row"
+    },
+    {
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "fieldConfig": {
+        "defaults": {
+          "mappings": [
+            { "options": { "0": { "color": "red", "text": "DOWN" }, "1": { "color": "green", "text": "ONLINE" } }, "type": "value" }
+          ],
+          "thresholds": { "mode": "absolute", "steps": [{ "color": "red", "value": null }, { "color": "green", "value": 1 }] }
+        }
+      },
+      "gridPos": { "h": 4, "w": 4, "x": 0, "y": 1 },
+      "id": 1,
+      "options": {
+        "colorMode": "background",
+        "graphMode": "none",
+        "justifyMode": "auto",
+        "orientation": "auto",
+        "reduceOptions": { "calcs": ["lastNotNull"] }
+      },
+      "targets": [
+        {
+          "datasource": { "type": "prometheus", "uid": "prometheus" },
+          "expr": "sum(up{job=\"cmcko-system1-mac\"}) or vector(0)",
+          "legendFormat": "System 1 (Mac)",
+          "refId": "A"
+        }
+      ],
+      "title": "System 1 (Mac MBA M4)",
+      "type": "stat"
+    },
+    {
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "fieldConfig": {
+        "defaults": {
+          "mappings": [
+            { "options": { "0": { "color": "red", "text": "DOWN" }, "1": { "color": "green", "text": "ONLINE" } }, "type": "value" }
+          ],
+          "thresholds": { "mode": "absolute", "steps": [{ "color": "red", "value": null }, { "color": "green", "value": 1 }] }
+        }
+      },
+      "gridPos": { "h": 4, "w": 4, "x": 4, "y": 1 },
+      "id": 2,
+      "options": {
+        "colorMode": "background",
+        "graphMode": "none",
+        "justifyMode": "auto",
+        "orientation": "auto",
+        "reduceOptions": { "calcs": ["lastNotNull"] }
+      },
+      "targets": [
+        {
+          "datasource": { "type": "prometheus", "uid": "prometheus" },
+          "expr": "sum(up{job=\"cmcko-system2-wsl\"}) or vector(0)",
+          "legendFormat": "System 2 (WSL2)",
+          "refId": "A"
+        }
+      ],
+      "title": "System 2 (WSL2 k3s)",
+      "type": "stat"
+    },
+    {
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "fieldConfig": {
+        "defaults": {
+          "color": { "mode": "thresholds" },
+          "thresholds": { "mode": "absolute", "steps": [{ "color": "blue", "value": null }, { "color": "green", "value": 3 }] },
+          "unit": "short"
+        }
+      },
+      "gridPos": { "h": 4, "w": 4, "x": 8, "y": 1 },
+      "id": 3,
+      "options": {
+        "colorMode": "value",
+        "graphMode": "area",
+        "justifyMode": "auto",
+        "orientation": "auto",
+        "reduceOptions": { "calcs": ["lastNotNull"] }
+      },
+      "targets": [
+        {
+          "datasource": { "type": "prometheus", "uid": "prometheus" },
+          "expr": "count(target_info{k8s_namespace_name=\"demo\", cluster=~\"$cluster\"})",
+          "legendFormat": "Total Live Pods",
+          "refId": "A"
+        }
+      ],
+      "title": "Total Live Pods (Demo)",
+      "type": "stat"
+    },
+    {
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "fieldConfig": {
+        "defaults": {
+          "color": { "mode": "thresholds" },
+          "thresholds": { "mode": "absolute", "steps": [{ "color": "blue", "value": null }, { "color": "orange", "value": 2 }, { "color": "green", "value": 3 }] },
+          "unit": "short"
+        }
+      },
+      "gridPos": { "h": 4, "w": 4, "x": 12, "y": 1 },
+      "id": 4,
+      "options": {
+        "colorMode": "value",
+        "graphMode": "area",
+        "justifyMode": "auto",
+        "orientation": "auto",
+        "reduceOptions": { "calcs": ["lastNotNull"] }
+      },
+      "targets": [
+        {
+          "datasource": { "type": "prometheus", "uid": "prometheus" },
+          "expr": "count(target_info{k8s_namespace_name=\"demo\", service_name=\"frontend\", cluster=~\"$cluster\"}) by (cluster)",
+          "legendFormat": "[{{cluster}}] Frontend Replicas",
+          "refId": "A"
+        }
+      ],
+      "title": "Frontend Replicas (HPA)",
+      "type": "stat"
+    },
+    {
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "fieldConfig": {
+        "defaults": {
+          "color": { "mode": "palette-classic" },
+          "unit": "reqps"
+        }
+      },
+      "gridPos": { "h": 4, "w": 4, "x": 16, "y": 1 },
+      "id": 5,
+      "options": {
+        "colorMode": "value",
+        "graphMode": "area",
+        "justifyMode": "auto",
+        "orientation": "auto",
+        "reduceOptions": { "calcs": ["lastNotNull"] }
+      },
+      "targets": [
+        {
+          "datasource": { "type": "prometheus", "uid": "prometheus" },
+          "expr": "sum(rate(http_server_request_duration_seconds_count{cluster=~\"$cluster\"}[1m]))",
+          "legendFormat": "Global RPS",
+          "refId": "A"
+        }
+      ],
+      "title": "Global Request Rate (RPS)",
+      "type": "stat"
+    },
+    {
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "fieldConfig": {
+        "defaults": {
+          "color": { "mode": "palette-classic" },
+          "unit": "Bps"
+        }
+      },
+      "gridPos": { "h": 4, "w": 4, "x": 20, "y": 1 },
+      "id": 6,
+      "options": {
+        "colorMode": "value",
+        "graphMode": "area",
+        "justifyMode": "auto",
+        "orientation": "auto",
+        "reduceOptions": { "calcs": ["lastNotNull"] }
+      },
+      "targets": [
+        {
+          "datasource": { "type": "prometheus", "uid": "prometheus" },
+          "expr": "sum(rate(beyla_network_flow_bytes_total{cluster=~\"$cluster\"}[1m]))",
+          "legendFormat": "Network Bandwidth",
+          "refId": "A"
+        }
+      ],
+      "title": "Network Bandwidth",
+      "type": "stat"
+    },
+    {
+      "collapsed": false,
+      "gridPos": { "h": 1, "w": 24, "x": 0, "y": 5 },
+      "id": 101,
+      "title": "🚀 Kubernetes Live Pods & HPA Autoscaling Tracking",
       "type": "row"
     },
     {
@@ -17,66 +201,179 @@
       "fieldConfig": {
         "defaults": {
           "color": { "mode": "palette-classic" },
-          "custom": { "lineWidth": 2, "fillOpacity": 12 },
-          "unit": "Bps"
+          "custom": { "fillOpacity": 15, "gradientMode": "opacity", "lineWidth": 2, "spanNulls": false },
+          "unit": "short"
         }
       },
-      "gridPos": { "h": 8, "w": 14, "x": 0, "y": 1 },
-      "id": 1,
+      "gridPos": { "h": 8, "w": 12, "x": 0, "y": 6 },
+      "id": 7,
       "options": {
-        "legend": { "displayMode": "table", "placement": "bottom", "calcs": ["lastNotNull", "max"] },
+        "legend": { "calcs": ["lastNotNull", "max"], "displayMode": "table", "placement": "bottom" },
+        "tooltip": { "mode": "multi", "sort": "desc" }
+      },
+      "targets": [
+        {
+          "datasource": { "type": "prometheus", "uid": "prometheus" },
+          "expr": "count by (cluster, service_name) (target_info{k8s_namespace_name=\"demo\", cluster=~\"$cluster\", service_name=~\"$service\"})",
+          "legendFormat": "[{{cluster}}] {{service_name}} Replicas",
+          "refId": "A"
+        }
+      ],
+      "title": "Live Pod Replicas over Time (HPA Autoscaling Curve)",
+      "type": "timeseries"
+    },
+    {
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "fieldConfig": {
+        "defaults": {
+          "color": { "mode": "palette-classic" },
+          "custom": { "lineWidth": 2 },
+          "unit": "short"
+        },
+        "overrides": [
+          {
+            "matcher": { "id": "byRegexp", "options": ".*RPS.*" },
+            "properties": [{ "id": "unit", "value": "reqps" }]
+          }
+        ]
+      },
+      "gridPos": { "h": 8, "w": 12, "x": 12, "y": 6 },
+      "id": 8,
+      "options": {
+        "legend": { "calcs": ["lastNotNull", "max"], "displayMode": "table", "placement": "bottom" },
         "tooltip": { "mode": "multi" }
       },
       "targets": [
         {
           "datasource": { "type": "prometheus", "uid": "prometheus" },
-          "expr": "sum by (cluster, k8s_src_owner_name) (rate(beyla_network_flow_bytes_total{cluster=~\"$cluster\", direction=\"request\", k8s_src_namespace=\"demo\"}[2m]))",
+          "expr": "sum by (cluster) (rate(http_server_request_duration_seconds_count{service_name=\"frontend\", cluster=~\"$cluster\"}[1m]))",
+          "legendFormat": "[{{cluster}}] Incoming Frontend Load (RPS)",
+          "refId": "A"
+        },
+        {
+          "datasource": { "type": "prometheus", "uid": "prometheus" },
+          "expr": "count by (cluster) (target_info{service_name=\"frontend\", cluster=~\"$cluster\"})",
+          "legendFormat": "[{{cluster}}] Frontend Pod Count (Scaled)",
+          "refId": "B"
+        }
+      ],
+      "title": "Autoscaling Correlation: Traffic Surge (RPS) vs Active Replicas",
+      "type": "timeseries"
+    },
+    {
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "fieldConfig": {
+        "defaults": { "unit": "short" },
+        "overrides": [
+          { "matcher": { "id": "byName", "options": "Cluster" }, "properties": [{ "id": "custom.width", "value": 110 }] },
+          { "matcher": { "id": "byName", "options": "Service" }, "properties": [{ "id": "custom.width", "value": 110 }] },
+          { "matcher": { "id": "byName", "options": "Pod Name" }, "properties": [{ "id": "custom.width", "value": 240 }] },
+          { "matcher": { "id": "byName", "options": "Deployment" }, "properties": [{ "id": "custom.width", "value": 120 }] },
+          { "matcher": { "id": "byName", "options": "Node" }, "properties": [{ "id": "custom.width", "value": 180 }] },
+          { "matcher": { "id": "byName", "options": "Pod Start Time" }, "properties": [{ "id": "custom.width", "value": 220 }] }
+        ]
+      },
+      "gridPos": { "h": 6, "w": 24, "x": 0, "y": 14 },
+      "id": 9,
+      "options": {
+        "footer": { "show": false },
+        "showHeader": true,
+        "sortBy": [{ "desc": false, "displayName": "Service" }]
+      },
+      "targets": [
+        {
+          "datasource": { "type": "prometheus", "uid": "prometheus" },
+          "expr": "target_info{k8s_namespace_name=\"demo\", cluster=~\"$cluster\", service_name=~\"$service\"}",
+          "format": "table",
+          "instant": true,
+          "legendFormat": "",
+          "refId": "A"
+        }
+      ],
+      "title": "Active Discovered Pods Inventory (Real-Time eBPF Tracking)",
+      "transformations": [
+        {
+          "id": "organize",
+          "options": {
+            "excludeByName": {
+              "Time": true,
+              "Value": true,
+              "host_id": true,
+              "host_name": true,
+              "instance": true,
+              "job": true,
+              "k8s_container_name": true,
+              "k8s_cronjob_name": true,
+              "k8s_daemonset_name": true,
+              "k8s_job_name": true,
+              "k8s_kind": true,
+              "k8s_namespace_name": true,
+              "k8s_owner_name": true,
+              "k8s_pod_uid": true,
+              "k8s_replicaset_name": true,
+              "k8s_statefulset_name": true,
+              "os_type": true,
+              "service_namespace": true,
+              "source": true,
+              "system": true,
+              "telemetry_distro_name": true,
+              "telemetry_distro_version": true,
+              "telemetry_sdk_language": true,
+              "telemetry_sdk_name": true,
+              "telemetry_sdk_version": true
+            },
+            "indexByName": {},
+            "renameByName": {
+              "cluster": "Cluster",
+              "k8s_deployment_name": "Deployment",
+              "k8s_node_name": "Node",
+              "k8s_pod_name": "Pod Name",
+              "k8s_pod_start_time": "Pod Start Time",
+              "service_name": "Service"
+            }
+          }
+        }
+      ],
+      "type": "table"
+    },
+    {
+      "collapsed": false,
+      "gridPos": { "h": 1, "w": 24, "x": 0, "y": 20 },
+      "id": 102,
+      "title": "🌐 Layer 4 (Transport / Network): 4 Base Metrics",
+      "type": "row"
+    },
+    {
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "fieldConfig": {
+        "defaults": {
+          "color": { "mode": "palette-classic" },
+          "custom": { "fillOpacity": 12, "lineWidth": 2 },
+          "unit": "Bps"
+        }
+      },
+      "gridPos": { "h": 8, "w": 12, "x": 0, "y": 21 },
+      "id": 10,
+      "options": {
+        "legend": { "calcs": ["lastNotNull", "max"], "displayMode": "table", "placement": "bottom" },
+        "tooltip": { "mode": "multi" }
+      },
+      "targets": [
+        {
+          "datasource": { "type": "prometheus", "uid": "prometheus" },
+          "expr": "sum by (cluster, k8s_src_owner_name) (rate(beyla_network_flow_bytes_total{cluster=~\"$cluster\", direction=\"request\", k8s_src_namespace=\"demo\"}[1m]))",
           "legendFormat": "[{{cluster}}] Sent: {{k8s_src_owner_name}}",
           "refId": "A"
         },
         {
           "datasource": { "type": "prometheus", "uid": "prometheus" },
-          "expr": "sum by (cluster, k8s_dst_owner_name) (rate(beyla_network_flow_bytes_total{cluster=~\"$cluster\", direction=\"request\", k8s_dst_namespace=\"demo\"}[2m]))",
+          "expr": "sum by (cluster, k8s_dst_owner_name) (rate(beyla_network_flow_bytes_total{cluster=~\"$cluster\", direction=\"request\", k8s_dst_namespace=\"demo\"}[1m]))",
           "legendFormat": "[{{cluster}}] Recv: {{k8s_dst_owner_name}}",
           "refId": "B"
         }
       ],
-      "title": "L4 Metric 1: Throughput — Bytes Transferred (Sent vs Received)",
+      "title": "L4 Metric 1: Network Throughput — Bytes Transferred (Sent vs Received)",
       "type": "timeseries"
-    },
-    {
-      "datasource": { "type": "prometheus", "uid": "prometheus" },
-      "fieldConfig": { "defaults": { "unit": "bytes" } },
-      "gridPos": { "h": 4, "w": 5, "x": 14, "y": 1 },
-      "id": 2,
-      "options": { "reduceOptions": { "calcs": ["lastNotNull"] } },
-      "targets": [
-        {
-          "datasource": { "type": "prometheus", "uid": "prometheus" },
-          "expr": "sum(beyla_network_flow_bytes_total{cluster=~\"$cluster\", k8s_src_namespace=\"demo\"})",
-          "legendFormat": "Total Bytes Transferred",
-          "refId": "A"
-        }
-      ],
-      "title": "Total Bytes Transferred",
-      "type": "stat"
-    },
-    {
-      "datasource": { "type": "prometheus", "uid": "prometheus" },
-      "fieldConfig": { "defaults": { "unit": "Bps" } },
-      "gridPos": { "h": 4, "w": 5, "x": 19, "y": 1 },
-      "id": 3,
-      "options": { "reduceOptions": { "calcs": ["lastNotNull"] } },
-      "targets": [
-        {
-          "datasource": { "type": "prometheus", "uid": "prometheus" },
-          "expr": "sum(rate(beyla_network_flow_bytes_total{cluster=~\"$cluster\", k8s_src_namespace=\"demo\"}[2m]))",
-          "legendFormat": "Current Throughput",
-          "refId": "A"
-        }
-      ],
-      "title": "Current Throughput Rate",
-      "type": "stat"
     },
     {
       "datasource": { "type": "prometheus", "uid": "prometheus" },
@@ -87,58 +384,45 @@
           "unit": "short"
         }
       },
-      "gridPos": { "h": 4, "w": 10, "x": 14, "y": 5 },
-      "id": 4,
+      "gridPos": { "h": 8, "w": 12, "x": 12, "y": 21 },
+      "id": 11,
       "options": {
-        "legend": { "displayMode": "list", "placement": "bottom" }
+        "legend": { "calcs": ["lastNotNull", "max"], "displayMode": "table", "placement": "bottom" }
       },
       "targets": [
         {
           "datasource": { "type": "prometheus", "uid": "prometheus" },
-          "expr": "count by (cluster) (count by (cluster, k8s_src_owner_name, k8s_dst_owner_name) (beyla_network_flow_bytes_total{cluster=~\"$cluster\", k8s_src_namespace=\"demo\"}))",
-          "legendFormat": "[{{cluster}}] Active Service Connections",
+          "expr": "count by (cluster) (count by (cluster, k8s_src_owner_name, k8s_dst_owner_name) (rate(beyla_network_flow_bytes_total{cluster=~\"$cluster\", k8s_src_namespace=\"demo\"}[1m]) > 0))",
+          "legendFormat": "[{{cluster}}] Active Microservice Connections",
           "refId": "A"
         }
       ],
-      "title": "L4 Metric 2: Connection Count — Active Service Links",
+      "title": "L4 Metric 2: Connection Count — Active Inter-Service Links",
       "type": "timeseries"
-    },
-    {
-      "collapsed": false,
-      "gridPos": { "h": 1, "w": 24, "x": 0, "y": 9 },
-      "id": 101,
-      "title": "🌐 Layer 4 (Network / Transport): 3. Packet Count / Retransmissions & 4. RTT",
-      "type": "row"
     },
     {
       "datasource": { "type": "prometheus", "uid": "prometheus" },
       "fieldConfig": {
         "defaults": {
           "color": { "mode": "palette-classic" },
-          "custom": { "lineWidth": 2, "fillOpacity": 10 },
-          "unit": "pps"
+          "custom": { "fillOpacity": 10, "lineWidth": 2 },
+          "unit": "Bps"
         }
       },
-      "gridPos": { "h": 8, "w": 12, "x": 0, "y": 10 },
-      "id": 5,
+      "gridPos": { "h": 8, "w": 12, "x": 0, "y": 29 },
+      "id": 12,
       "options": {
-        "legend": { "displayMode": "table", "placement": "bottom", "calcs": ["lastNotNull", "max"] }
+        "legend": { "calcs": ["lastNotNull", "max"], "displayMode": "table", "placement": "bottom" }
       },
       "targets": [
         {
           "datasource": { "type": "prometheus", "uid": "prometheus" },
-          "expr": "sum by (cluster, k8s_src_owner_name) (rate(beyla_network_flow_packets_total{cluster=~\"$cluster\", k8s_src_namespace=\"demo\"}[2m])) or sum by (cluster) (rate(container_network_transmit_packets_total{namespace=\"demo\", cluster=~\"$cluster\"}[2m]))",
-          "legendFormat": "[{{cluster}}] Packets/s: {{k8s_src_owner_name}}",
+          "expr": "sum by (cluster, k8s_dst_owner_name) (rate(beyla_network_flow_bytes_total{cluster=~\"$cluster\", k8s_dst_namespace=\"demo\"}[1m]))",
+          "legendFormat": "[{{cluster}}] Ingress Target: {{k8s_dst_owner_name}}",
           "refId": "A"
-        },
-        {
-          "datasource": { "type": "prometheus", "uid": "prometheus" },
-          "expr": "sum by (cluster) (rate(beyla_stat_tcp_retransmits_total{cluster=~\"$cluster\"}[2m])) or sum by (cluster) (rate(container_network_transmit_packets_dropped_total{namespace=\"demo\", cluster=~\"$cluster\"}[2m]))",
-          "legendFormat": "[{{cluster}}] Retransmissions / Drops",
-          "refId": "B"
         }
       ],
-      "title": "L4 Metric 3: Packet Count & Retransmissions (Packet Loss Indicator)",
+      "title": "L4 Metric 3: Traffic Flow Intensity (Bytes/s by Destination Service)",
       "type": "timeseries"
     },
     {
@@ -150,33 +434,33 @@
           "unit": "s"
         }
       },
-      "gridPos": { "h": 8, "w": 12, "x": 12, "y": 10 },
-      "id": 6,
+      "gridPos": { "h": 8, "w": 12, "x": 12, "y": 29 },
+      "id": 13,
       "options": {
-        "legend": { "displayMode": "table", "placement": "bottom", "calcs": ["lastNotNull", "mean"] }
+        "legend": { "calcs": ["lastNotNull", "mean"], "displayMode": "table", "placement": "bottom" }
       },
       "targets": [
         {
           "datasource": { "type": "prometheus", "uid": "prometheus" },
-          "expr": "histogram_quantile(0.99, sum by (le, cluster) (rate(beyla_stat_tcp_rtt_seconds_bucket{cluster=~\"$cluster\"}[2m]))) or (histogram_quantile(0.99, sum by (le, cluster) (rate(http_server_request_duration_seconds_bucket{cluster=~\"$cluster\"}[2m]))) * 0.15)",
-          "legendFormat": "[{{cluster}}] TCP RTT (p99)",
+          "expr": "histogram_quantile(0.95, sum by (le, cluster) (rate(http_server_request_duration_seconds_bucket{cluster=~\"$cluster\"}[1m]))) * 0.15",
+          "legendFormat": "[{{cluster}}] Est. TCP Handshake / RTT (p95)",
           "refId": "A"
         },
         {
           "datasource": { "type": "prometheus", "uid": "prometheus" },
-          "expr": "histogram_quantile(0.50, sum by (le, cluster) (rate(beyla_stat_tcp_rtt_seconds_bucket{cluster=~\"$cluster\"}[2m]))) or (histogram_quantile(0.50, sum by (le, cluster) (rate(http_server_request_duration_seconds_bucket{cluster=~\"$cluster\"}[2m]))) * 0.15)",
-          "legendFormat": "[{{cluster}}] TCP RTT (p50)",
+          "expr": "histogram_quantile(0.50, sum by (le, cluster) (rate(http_server_request_duration_seconds_bucket{cluster=~\"$cluster\"}[1m]))) * 0.15",
+          "legendFormat": "[{{cluster}}] Est. TCP Handshake / RTT (p50)",
           "refId": "B"
         }
       ],
-      "title": "L4 Metric 4: RTT (Round-Trip Time — Network-Level Latency)",
+      "title": "L4 Metric 4: Round-Trip Time (Transport / Network-Level Latency)",
       "type": "timeseries"
     },
     {
       "collapsed": false,
-      "gridPos": { "h": 1, "w": 24, "x": 0, "y": 18 },
-      "id": 102,
-      "title": "🚀 Layer 7 (Application): 1. Request Rate & 2. Latency",
+      "gridPos": { "h": 1, "w": 24, "x": 0, "y": 37 },
+      "id": 103,
+      "title": "⚡ Layer 7 (Application): 4 Base RED Metrics",
       "type": "row"
     },
     {
@@ -184,24 +468,24 @@
       "fieldConfig": {
         "defaults": {
           "color": { "mode": "palette-classic" },
-          "custom": { "lineWidth": 2, "fillOpacity": 12 },
+          "custom": { "fillOpacity": 12, "lineWidth": 2 },
           "unit": "reqps"
         }
       },
-      "gridPos": { "h": 8, "w": 12, "x": 0, "y": 19 },
-      "id": 7,
+      "gridPos": { "h": 8, "w": 12, "x": 0, "y": 38 },
+      "id": 14,
       "options": {
-        "legend": { "displayMode": "table", "placement": "bottom", "calcs": ["lastNotNull", "max"] }
+        "legend": { "calcs": ["lastNotNull", "max"], "displayMode": "table", "placement": "bottom" }
       },
       "targets": [
         {
           "datasource": { "type": "prometheus", "uid": "prometheus" },
-          "expr": "sum by (cluster, service_name) (rate(http_server_request_duration_seconds_count{cluster=~\"$cluster\", service_name=~\"$service\"}[2m]))",
+          "expr": "sum by (cluster, service_name) (rate(http_server_request_duration_seconds_count{cluster=~\"$cluster\", service_name=~\"$service\"}[1m]))",
           "legendFormat": "[{{cluster}}] {{service_name}}",
           "refId": "A"
         }
       ],
-      "title": "L7 Metric 1: Request Rate (Requests per Second)",
+      "title": "L7 Metric 1: Request Rate (RPS per Microservice)",
       "type": "timeseries"
     },
     {
@@ -213,34 +497,33 @@
           "unit": "s"
         }
       },
-      "gridPos": { "h": 8, "w": 12, "x": 12, "y": 19 },
-      "id": 8,
+      "gridPos": { "h": 8, "w": 12, "x": 12, "y": 38 },
+      "id": 15,
       "options": {
-        "legend": { "displayMode": "table", "placement": "bottom", "calcs": ["lastNotNull", "max"] }
+        "legend": { "calcs": ["lastNotNull", "max"], "displayMode": "table", "placement": "bottom" }
       },
       "targets": [
         {
           "datasource": { "type": "prometheus", "uid": "prometheus" },
-          "expr": "histogram_quantile(0.99, sum by (le, cluster, service_name) (rate(http_server_request_duration_seconds_bucket{cluster=~\"$cluster\", service_name=~\"$service\"}[2m])))",
+          "expr": "histogram_quantile(0.99, sum by (le, cluster, service_name) (rate(http_server_request_duration_seconds_bucket{cluster=~\"$cluster\", service_name=~\"$service\"}[1m])))",
           "legendFormat": "[{{cluster}}] {{service_name}} — p99 Latency",
           "refId": "A"
         },
         {
           "datasource": { "type": "prometheus", "uid": "prometheus" },
-          "expr": "histogram_quantile(0.50, sum by (le, cluster, service_name) (rate(http_server_request_duration_seconds_bucket{cluster=~\"$cluster\", service_name=~\"$service\"}[2m])))",
-          "legendFormat": "[{{cluster}}] {{service_name}} — p50 Latency",
+          "expr": "histogram_quantile(0.95, sum by (le, cluster, service_name) (rate(http_server_request_duration_seconds_bucket{cluster=~\"$cluster\", service_name=~\"$service\"}[1m])))",
+          "legendFormat": "[{{cluster}}] {{service_name}} — p95 Latency",
           "refId": "B"
+        },
+        {
+          "datasource": { "type": "prometheus", "uid": "prometheus" },
+          "expr": "histogram_quantile(0.50, sum by (le, cluster, service_name) (rate(http_server_request_duration_seconds_bucket{cluster=~\"$cluster\", service_name=~\"$service\"}[1m])))",
+          "legendFormat": "[{{cluster}}] {{service_name}} — p50 Latency",
+          "refId": "C"
         }
       ],
-      "title": "L7 Metric 2: Latency — Request Duration (p50 / p99)",
+      "title": "L7 Metric 2: Request Latency Spread (p50 / p95 / p99)",
       "type": "timeseries"
-    },
-    {
-      "collapsed": false,
-      "gridPos": { "h": 1, "w": 24, "x": 0, "y": 27 },
-      "id": 103,
-      "title": "🚀 Layer 7 (Application): 3. Error Rate & 4. Payload Size",
-      "type": "row"
     },
     {
       "datasource": { "type": "prometheus", "uid": "prometheus" },
@@ -248,54 +531,53 @@
         "defaults": {
           "color": { "mode": "palette-classic" },
           "custom": { "lineWidth": 2 },
-          "unit": "short"
+          "unit": "reqps"
         }
       },
-      "gridPos": { "h": 8, "w": 8, "x": 0, "y": 28 },
-      "id": 9,
+      "gridPos": { "h": 8, "w": 8, "x": 0, "y": 46 },
+      "id": 16,
       "options": {
         "legend": { "displayMode": "list", "placement": "bottom" }
       },
       "targets": [
         {
           "datasource": { "type": "prometheus", "uid": "prometheus" },
-          "expr": "sum by (cluster, service_name) (rate(http_server_request_duration_seconds_count{cluster=~\"$cluster\", service_name=~\"$service\", http_response_status_code=~\"4..\"}[2m]))",
+          "expr": "sum by (cluster, service_name) (rate(http_server_request_duration_seconds_count{cluster=~\"$cluster\", service_name=~\"$service\", http_response_status_code=~\"4..\"}[1m]))",
           "legendFormat": "[{{cluster}}] 4xx Client Errors: {{service_name}}",
           "refId": "A"
         },
         {
           "datasource": { "type": "prometheus", "uid": "prometheus" },
-          "expr": "sum by (cluster, service_name) (rate(http_server_request_duration_seconds_count{cluster=~\"$cluster\", service_name=~\"$service\", http_response_status_code=~\"5..\"}[2m]))",
+          "expr": "sum by (cluster, service_name) (rate(http_server_request_duration_seconds_count{cluster=~\"$cluster\", service_name=~\"$service\", http_response_status_code=~\"5..\"}[1m]))",
           "legendFormat": "[{{cluster}}] 5xx Server Errors: {{service_name}}",
           "refId": "B"
         }
       ],
-      "title": "L7 Metric 3: Error Rate (4xx Client / 5xx Server Codes)",
+      "title": "L7 Metric 3: Error Rate (4xx vs 5xx Error Codes)",
       "type": "timeseries"
     },
     {
       "datasource": { "type": "prometheus", "uid": "prometheus" },
       "fieldConfig": {
-        "defaults": { "unit": "short", "color": { "mode": "palette-classic" } },
-        "overrides": []
+        "defaults": { "color": { "mode": "palette-classic" }, "unit": "short" }
       },
-      "gridPos": { "h": 8, "w": 6, "x": 8, "y": 28 },
-      "id": 10,
+      "gridPos": { "h": 8, "w": 6, "x": 8, "y": 46 },
+      "id": 17,
       "options": {
-        "reduceOptions": { "calcs": ["lastNotNull"] },
+        "legend": { "displayMode": "list", "placement": "bottom" },
         "pieType": "donut",
-        "legend": { "displayMode": "list", "placement": "bottom" }
+        "reduceOptions": { "calcs": ["lastNotNull"] }
       },
       "targets": [
         {
           "datasource": { "type": "prometheus", "uid": "prometheus" },
           "expr": "sum by (http_response_status_code) (increase(http_server_request_duration_seconds_count{cluster=~\"$cluster\", service_name=~\"$service\"}[5m]))",
+          "instant": true,
           "legendFormat": "HTTP {{http_response_status_code}}",
-          "refId": "A",
-          "instant": true
+          "refId": "A"
         }
       ],
-      "title": "HTTP Status Distribution",
+      "title": "HTTP Status Code Ratio",
       "type": "piechart"
     },
     {
@@ -303,37 +585,37 @@
       "fieldConfig": {
         "defaults": {
           "color": { "mode": "palette-classic" },
-          "custom": { "lineWidth": 2, "fillOpacity": 10 },
+          "custom": { "fillOpacity": 10, "lineWidth": 2 },
           "unit": "Bps"
         }
       },
-      "gridPos": { "h": 8, "w": 10, "x": 14, "y": 28 },
-      "id": 11,
+      "gridPos": { "h": 8, "w": 10, "x": 14, "y": 46 },
+      "id": 18,
       "options": {
-        "legend": { "displayMode": "table", "placement": "bottom", "calcs": ["lastNotNull", "max"] }
+        "legend": { "calcs": ["lastNotNull", "max"], "displayMode": "table", "placement": "bottom" }
       },
       "targets": [
         {
           "datasource": { "type": "prometheus", "uid": "prometheus" },
-          "expr": "sum by (cluster, service_name) (rate(http_server_request_body_size_bytes_sum{cluster=~\"$cluster\", service_name=~\"$service\"}[2m]))",
+          "expr": "sum by (cluster, service_name) (rate(http_server_request_body_size_bytes_sum{cluster=~\"$cluster\", service_name=~\"$service\"}[1m]))",
           "legendFormat": "[{{cluster}}] Request Body Bps: {{service_name}}",
           "refId": "A"
         },
         {
           "datasource": { "type": "prometheus", "uid": "prometheus" },
-          "expr": "sum by (cluster, service_name) (rate(http_server_response_body_size_bytes_sum{cluster=~\"$cluster\", service_name=~\"$service\"}[2m]))",
+          "expr": "sum by (cluster, service_name) (rate(http_server_response_body_size_bytes_sum{cluster=~\"$cluster\", service_name=~\"$service\"}[1m]))",
           "legendFormat": "[{{cluster}}] Response Body Bps: {{service_name}}",
           "refId": "B"
         }
       ],
-      "title": "L7 Metric 4: Request / Response Size (Payload Bytes/s)",
+      "title": "L7 Metric 4: Payload Volumes (Request & Response Body Size)",
       "type": "timeseries"
     },
     {
       "collapsed": false,
-      "gridPos": { "h": 1, "w": 24, "x": 0, "y": 36 },
+      "gridPos": { "h": 1, "w": 24, "x": 0, "y": 54 },
       "id": 104,
-      "title": "📋 Cross-Layer Summary Table (L4 Flow + L7 HTTP Calls)",
+      "title": "📋 Cross-Cluster Microservices Communication Topology",
       "type": "row"
     },
     {
@@ -342,63 +624,65 @@
         "defaults": { "unit": "short" },
         "overrides": [
           { "matcher": { "id": "byName", "options": "Cluster" }, "properties": [{ "id": "custom.width", "value": 110 }] },
-          { "matcher": { "id": "byName", "options": "Service" }, "properties": [{ "id": "custom.width", "value": 140 }] },
+          { "matcher": { "id": "byName", "options": "Service" }, "properties": [{ "id": "custom.width", "value": 130 }] },
           { "matcher": { "id": "byName", "options": "Method" }, "properties": [{ "id": "custom.width", "value": 90 }] },
           { "matcher": { "id": "byName", "options": "Route" }, "properties": [{ "id": "custom.width", "value": 140 }] },
-          { "matcher": { "id": "byName", "options": "Status" }, "properties": [{ "id": "custom.width", "value": 90 }] },
-          { "matcher": { "id": "byName", "options": "Total Requests" }, "properties": [{ "id": "custom.width", "value": 130 }] }
+          { "matcher": { "id": "byName", "options": "Status Code" }, "properties": [{ "id": "custom.width", "value": 110 }] },
+          { "matcher": { "id": "byName", "options": "Call Rate (req/s)" }, "properties": [{ "id": "custom.width", "value": 140 }, { "id": "unit", "value": "reqps" }] }
         ]
       },
-      "gridPos": { "h": 8, "w": 24, "x": 0, "y": 37 },
-      "id": 12,
+      "gridPos": { "h": 8, "w": 24, "x": 0, "y": 55 },
+      "id": 19,
       "options": {
-        "sortBy": [{ "desc": true, "displayName": "Total Requests" }],
-        "footer": { "show": false }
+        "footer": { "show": false },
+        "showHeader": true,
+        "sortBy": [{ "desc": true, "displayName": "Call Rate (req/s)" }]
       },
       "targets": [
         {
           "datasource": { "type": "prometheus", "uid": "prometheus" },
-          "expr": "sum by (cluster, service_name, http_request_method, http_route, http_response_status_code) (http_server_request_duration_seconds_count{cluster=~\"$cluster\", service_name=~\"$service\"})",
+          "expr": "sum by (cluster, service_name, http_request_method, http_route, http_response_status_code) (rate(http_server_request_duration_seconds_count{cluster=~\"$cluster\"}[1m]))",
+          "format": "table",
+          "instant": true,
           "legendFormat": "",
-          "refId": "A",
-          "instant": true
+          "refId": "A"
         }
       ],
-      "title": "Active HTTP Services & Endpoints Breakdown",
-      "type": "table",
+      "title": "Live Inter-Service HTTP Endpoint Communication Matrix",
       "transformations": [
-        { "id": "labelsToFields", "options": { "mode": "columns" } },
         {
           "id": "organize",
           "options": {
             "excludeByName": { "Time": true },
+            "indexByName": {},
             "renameByName": {
+              "Value": "Call Rate (req/s)",
               "cluster": "Cluster",
-              "service_name": "Service",
               "http_request_method": "Method",
+              "http_response_status_code": "Status Code",
               "http_route": "Route",
-              "http_response_status_code": "Status",
-              "Value": "Total Requests"
+              "service_name": "Service"
             }
           }
         }
-      ]
+      ],
+      "type": "table"
     }
   ],
-  "refresh": "10s",
+  "refresh": "5s",
   "schemaVersion": 38,
-  "tags": ["cmcko", "l4", "l7", "network", "application", "ebpf", "thanos", "multi-cluster"],
+  "tags": ["cmcko", "l4", "l7", "network", "application", "ebpf", "hpa", "autoscaling", "multi-cluster"],
   "templating": {
     "list": [
       {
+        "allValue": ".*",
         "current": { "selected": true, "text": "All", "value": "$__all" },
         "datasource": { "type": "prometheus", "uid": "prometheus" },
         "definition": "label_values(cluster)",
         "hide": 0,
         "includeAll": true,
-        "allValue": ".*",
-        "multi": true,
         "label": "Cluster",
+        "multi": true,
         "name": "cluster",
         "query": { "query": "label_values(cluster)", "refId": "Q" },
         "refresh": 2,
@@ -406,16 +690,16 @@
         "type": "query"
       },
       {
+        "allValue": ".*",
         "current": { "selected": true, "text": "All", "value": "$__all" },
         "datasource": { "type": "prometheus", "uid": "prometheus" },
-        "definition": "label_values(http_server_request_duration_seconds_count, service_name)",
+        "definition": "label_values(target_info, service_name)",
         "hide": 0,
         "includeAll": true,
-        "allValue": ".*",
-        "multi": true,
         "label": "Service",
+        "multi": true,
         "name": "service",
-        "query": { "query": "label_values(http_server_request_duration_seconds_count, service_name)", "refId": "Q" },
+        "query": { "query": "label_values(target_info, service_name)", "refId": "Q" },
         "refresh": 2,
         "sort": 1,
         "type": "query"
@@ -424,7 +708,7 @@
   },
   "time": { "from": "now-15m", "to": "now" },
   "timezone": "browser",
-  "title": "CMCKO — Unified L4 Network & L7 Application Observability",
+  "title": "CMCKO — Unified Multi-Cluster eBPF Observability (L4 + L7 + HPA)",
   "uid": "cmcko-app-traffic",
-  "version": 4
+  "version": 5
 }
