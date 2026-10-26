@@ -32,6 +32,8 @@ config:
         - /backend
         - /status/*
         - /api/*
+        - /post
+        - /json
         - /api/v1/*
 
     attributes:
