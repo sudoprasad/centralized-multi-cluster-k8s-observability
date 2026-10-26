@@ -4,10 +4,10 @@
 param (
     [string]$TargetHost = "localhost",
     [string]$TargetPort = "30080",
-    [int]$Threads = 20,
+    [int]$Threads = 35,
     [int]$Duration = 300,
-    [int]$RampUp = 5,
-    [int]$ThinkTime = 0
+    [int]$RampUp = 15,
+    [int]$ThinkTime = 200
 )
 
 $ScriptDir = Split-Path -Parent $MyInvocation.MyCommand.Path
@@ -17,10 +17,11 @@ if (!(Test-Path $LogDir)) { New-Item -ItemType Directory -Path $LogDir | Out-Nul
 $Timestamp = Get-Date -Format "yyyyMMdd_HHmmss"
 $ResultFile = Join-Path $LogDir "run_$Timestamp.jtl"
 
-$ModeDesc = if ($ThinkTime -gt 0) { "Realistic Simulation (${ThinkTime}ms pause)" } else { "High-Volume Stress Mode (0ms pause)" }
+$ModeDesc = "Real-World Flash Spike (Human think time: ${ThinkTime}ms ± 50ms)"
 
 Write-Host "═══════════════════════════════════════════════════════════════════" -ForegroundColor Cyan
-Write-Host "  CMCKO External Traffic Generator (Apache JMeter - Windows)" -ForegroundColor Cyan
+Write-Host "  CMCKO Traffic Generator: Real-World Flash Spike (Windows)" -ForegroundColor Cyan
+Write-Host "  (Simulates ERP Result Declaration / E-Commerce Flash Sale)" -ForegroundColor Cyan
 Write-Host "═══════════════════════════════════════════════════════════════════" -ForegroundColor Cyan
 Write-Host "  Target Host:       $TargetHost"
 Write-Host "  Target Port:       $TargetPort"

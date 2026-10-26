@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <jmeterTestPlan version="1.2" properties="5.0" jmeter="5.6.3">
   <hashTree>
-    <TestPlan guiclass="TestPlanGui" testclass="TestPlan" testname="CMCKO Multi-Cluster Load Test" enabled="true">
-      <stringProp name="TestPlan.comments">Generates external L4 and L7 client traffic hitting the exposed frontend NodePort</stringProp>
+    <TestPlan guiclass="TestPlanGui" testclass="TestPlan" testname="CMCKO Multi-Cluster Load Test (Real-World Flash Spike)" enabled="true">
+      <stringProp name="TestPlan.comments">Simulates a real-world traffic spike (e.g. students logging into ERP portal to check exam results / flash sale)</stringProp>
       <boolProp name="TestPlan.functional_mode">false</boolProp>
       <boolProp name="TestPlan.tearDown_on_shutdown">true</boolProp>
       <boolProp name="TestPlan.serialize_threadgroups">false</boolProp>
@@ -20,12 +20,12 @@
           </elementProp>
           <elementProp name="THREADS" elementType="Argument">
             <stringProp name="Argument.name">THREADS</stringProp>
-            <stringProp name="Argument.value">${__P(threads,10)}</stringProp>
+            <stringProp name="Argument.value">${__P(threads,35)}</stringProp>
             <stringProp name="Argument.metadata">=</stringProp>
           </elementProp>
           <elementProp name="RAMP_UP" elementType="Argument">
             <stringProp name="Argument.name">RAMP_UP</stringProp>
-            <stringProp name="Argument.value">${__P(rampup,5)}</stringProp>
+            <stringProp name="Argument.value">${__P(rampup,15)}</stringProp>
             <stringProp name="Argument.metadata">=</stringProp>
           </elementProp>
           <elementProp name="DURATION" elementType="Argument">
@@ -35,7 +35,7 @@
           </elementProp>
           <elementProp name="THINK_TIME" elementType="Argument">
             <stringProp name="Argument.name">THINK_TIME</stringProp>
-            <stringProp name="Argument.value">${__P(thinktime,0)}</stringProp>
+            <stringProp name="Argument.value">${__P(thinktime,200)}</stringProp>
             <stringProp name="Argument.metadata">=</stringProp>
           </elementProp>
         </collectionProp>
@@ -70,7 +70,8 @@
         <hashTree/>
 
         <!-- Sampler 1: Frontend Root GET / -->
-        <HTTPSamplerProxy guiclass="HttpTestSampleGui" testclass="HTTPSamplerProxy" testname="GET / (Frontend)" enabled="true">
+        <!-- Step 1: User visits Portal Homepage / Landing Page -->
+        <HTTPSamplerProxy guiclass="HttpTestSampleGui" testclass="HTTPSamplerProxy" testname="GET / (Portal Homepage)" enabled="true">
           <boolProp name="HTTPSampler.postBodyRaw">false</boolProp>
           <elementProp name="HTTPsampler.Arguments" elementType="Arguments" guiclass="HTTPArgumentsPanel" testclass="Arguments" testname="User Defined Variables" enabled="true">
             <collectionProp name="Arguments.arguments"/>
@@ -84,34 +85,15 @@
         </HTTPSamplerProxy>
         <hashTree/>
 
-        <!-- Constant Timer: Pauses between requests (0ms for high-volume stress testing, or configurable via thinktime property) -->
-        <ConstantTimer guiclass="ConstantTimerGui" testclass="ConstantTimer" testname="Think Time (${THINK_TIME}ms)" enabled="true">
+        <!-- Realistic Human Think Time: Student reads homepage & prepares login (Uniform jitter) -->
+        <UniformRandomTimer guiclass="UniformRandomTimerGui" testclass="UniformRandomTimer" testname="Human Think Time (Reading Homepage: ${THINK_TIME}ms ± 50ms)" enabled="true">
           <stringProp name="ConstantTimer.delay">${THINK_TIME}</stringProp>
-        </ConstantTimer>
+          <stringProp name="RandomTimer.range">100.0</stringProp>
+        </UniformRandomTimer>
         <hashTree/>
 
-        <!-- Sampler 2: Backend query GET /backend -->
-        <HTTPSamplerProxy guiclass="HttpTestSampleGui" testclass="HTTPSamplerProxy" testname="GET /backend" enabled="true">
-          <boolProp name="HTTPSampler.postBodyRaw">false</boolProp>
-          <elementProp name="HTTPsampler.Arguments" elementType="Arguments" guiclass="HTTPArgumentsPanel" testclass="Arguments" testname="User Defined Variables" enabled="true">
-            <collectionProp name="Arguments.arguments"/>
-          </elementProp>
-          <stringProp name="HTTPSampler.path">/backend</stringProp>
-          <stringProp name="HTTPSampler.method">GET</stringProp>
-          <boolProp name="HTTPSampler.follow_redirects">true</boolProp>
-          <boolProp name="HTTPSampler.auto_redirects">false</boolProp>
-          <boolProp name="HTTPSampler.use_keepalive">true</boolProp>
-          <boolProp name="HTTPSampler.DO_MULTIPART_POST">false</boolProp>
-        </HTTPSamplerProxy>
-        <hashTree/>
-
-        <ConstantTimer guiclass="ConstantTimerGui" testclass="ConstantTimer" testname="Think Time (${THINK_TIME}ms)" enabled="true">
-          <stringProp name="ConstantTimer.delay">${THINK_TIME}</stringProp>
-        </ConstantTimer>
-        <hashTree/>
-
-        <!-- Sampler 3: Auth query GET /auth -->
-        <HTTPSamplerProxy guiclass="HttpTestSampleGui" testclass="HTTPSamplerProxy" testname="GET /auth" enabled="true">
+        <!-- Step 2: Student enters credentials / Session Auth -->
+        <HTTPSamplerProxy guiclass="HttpTestSampleGui" testclass="HTTPSamplerProxy" testname="GET /auth (User Login &amp; Token Auth)" enabled="true">
           <boolProp name="HTTPSampler.postBodyRaw">false</boolProp>
           <elementProp name="HTTPsampler.Arguments" elementType="Arguments" guiclass="HTTPArgumentsPanel" testclass="Arguments" testname="User Defined Variables" enabled="true">
             <collectionProp name="Arguments.arguments"/>
@@ -125,13 +107,37 @@
         </HTTPSamplerProxy>
         <hashTree/>
 
-        <ConstantTimer guiclass="ConstantTimerGui" testclass="ConstantTimer" testname="Think Time (${THINK_TIME}ms)" enabled="true">
+        <!-- Human Think Time: Navigating to Results / Catalog section -->
+        <UniformRandomTimer guiclass="UniformRandomTimerGui" testclass="UniformRandomTimer" testname="Human Think Time (Navigating: ${THINK_TIME}ms ± 50ms)" enabled="true">
           <stringProp name="ConstantTimer.delay">${THINK_TIME}</stringProp>
-        </ConstantTimer>
+          <stringProp name="RandomTimer.range">100.0</stringProp>
+        </UniformRandomTimer>
         <hashTree/>
 
-        <!-- Sampler 4: Occasional 404 Error Simulation GET /api/unknown (generates 4xx error rate metrics) -->
-        <HTTPSamplerProxy guiclass="HttpTestSampleGui" testclass="HTTPSamplerProxy" testname="GET /api/unknown (Error Sim)" enabled="true">
+        <!-- Step 3: Fetch Exam Results / Product Inventory from Backend -->
+        <HTTPSamplerProxy guiclass="HttpTestSampleGui" testclass="HTTPSamplerProxy" testname="GET /backend (Fetch Exam Results)" enabled="true">
+          <boolProp name="HTTPSampler.postBodyRaw">false</boolProp>
+          <elementProp name="HTTPsampler.Arguments" elementType="Arguments" guiclass="HTTPArgumentsPanel" testclass="Arguments" testname="User Defined Variables" enabled="true">
+            <collectionProp name="Arguments.arguments"/>
+          </elementProp>
+          <stringProp name="HTTPSampler.path">/backend</stringProp>
+          <stringProp name="HTTPSampler.method">GET</stringProp>
+          <boolProp name="HTTPSampler.follow_redirects">true</boolProp>
+          <boolProp name="HTTPSampler.auto_redirects">false</boolProp>
+          <boolProp name="HTTPSampler.use_keepalive">true</boolProp>
+          <boolProp name="HTTPSampler.DO_MULTIPART_POST">false</boolProp>
+        </HTTPSamplerProxy>
+        <hashTree/>
+
+        <!-- Human Think Time: Student reviewing results / product details -->
+        <UniformRandomTimer guiclass="UniformRandomTimerGui" testclass="UniformRandomTimer" testname="Human Think Time (Reviewing Results: ${THINK_TIME}ms ± 50ms)" enabled="true">
+          <stringProp name="ConstantTimer.delay">${THINK_TIME}</stringProp>
+          <stringProp name="RandomTimer.range">100.0</stringProp>
+        </UniformRandomTimer>
+        <hashTree/>
+
+        <!-- Step 4: Occasional 404 Simulation (Student types invalid Roll No / Out of stock item) -->
+        <HTTPSamplerProxy guiclass="HttpTestSampleGui" testclass="HTTPSamplerProxy" testname="GET /api/unknown (Invalid Roll No / 404)" enabled="true">
           <boolProp name="HTTPSampler.postBodyRaw">false</boolProp>
           <elementProp name="HTTPsampler.Arguments" elementType="Arguments" guiclass="HTTPArgumentsPanel" testclass="Arguments" testname="User Defined Variables" enabled="true">
             <collectionProp name="Arguments.arguments"/>

@@ -1,29 +1,28 @@
 #!/usr/bin/env bash
 # =============================================================================
 # CMCKO — JMeter Load Generator Runner
-# Generates external traffic to test L4 and L7 observability across clusters
+# Real-World Flash Spike Simulation (ERP Result Declaration / Flash Sale)
 #
-# USAGE:
 # USAGE:
 #   ./jmeter/run-jmeter.sh [TARGET_HOST] [PORT] [THREADS] [DURATION_SECS] [RAMPUP_SECS] [THINK_TIME_MS]
 #
 # EXAMPLES:
-#   # High-Stress Load (0ms think time, back-to-back requests):
-#   ./jmeter/run-jmeter.sh 100.110.71.94 30080 30 300 5 0
+#   # Real-World Flash Spike (35 users, 15s surge, 200ms think time):
+#   ./jmeter/run-jmeter.sh 100.110.71.94 30080 35 300 15 200
 #
-#   # Realistic User Simulation (200ms think time):
-#   ./jmeter/run-jmeter.sh 100.110.71.94 30080 15 300 5 200
+#   # Massive Flash Spike (50 users, 15s surge, 150ms think time):
+#   ./jmeter/run-jmeter.sh 100.110.71.94 30080 50 300 15 150
 #
-#   # Test Local Mac cluster:
-#   ./jmeter/run-jmeter.sh localhost 30080 20 180
+#   # Local Mac cluster:
+#   ./jmeter/run-jmeter.sh localhost 30080
 # =============================================================================
 
 TARGET_HOST="${1:-localhost}"
 TARGET_PORT="${2:-30080}"
-THREADS="${3:-20}"
+THREADS="${3:-35}"
 DURATION="${4:-300}"
-RAMPUP="${5:-5}"
-THINK_TIME="${6:-0}"
+RAMPUP="${5:-15}"
+THINK_TIME="${6:-200}"
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 JMX_FILE="$SCRIPT_DIR/cmcko-traffic-test.jmx"
@@ -32,13 +31,11 @@ mkdir -p "$LOG_DIR"
 TIMESTAMP=$(date +%Y%m%d_%H%M%S)
 RESULT_FILE="$LOG_DIR/run_${TIMESTAMP}.jtl"
 
-MODE_DESC="High-Volume Stress Mode (0ms pause)"
-if [ "$THINK_TIME" -gt 0 ] 2>/dev/null; then
-  MODE_DESC="Realistic Simulation (${THINK_TIME}ms pause)"
-fi
+MODE_DESC="Real-World Flash Spike (Human think time: ${THINK_TIME}ms ± 50ms)"
 
 echo "═══════════════════════════════════════════════════════════════════"
-echo "  CMCKO External Traffic Generator (Apache JMeter)"
+echo "  CMCKO Traffic Generator: Real-World Flash Spike Scenario"
+echo "  (Simulates ERP Result Declaration / E-Commerce Flash Sale)"
 echo "═══════════════════════════════════════════════════════════════════"
 echo "  Target Host:       $TARGET_HOST"
 echo "  Target Port:       $TARGET_PORT"
