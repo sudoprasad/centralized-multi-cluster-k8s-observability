@@ -28,8 +28,12 @@ log "STEP 1: Initializing cluster-01 on OrbStack..."
 docker context use orbstack 2>/dev/null || true
 if ! kind get clusters 2>/dev/null | grep -q "^cluster-01$"; then
   kind create cluster --config "$ROOT/clusters/cluster-01/kind-config.yaml"
-  pass "cluster-01 created"
+  # Prevent Kind container from auto-starting when OrbStack opens
+  docker update --restart=no cluster-01-control-plane 2>/dev/null || true
+  pass "cluster-01 created (auto-start disabled)"
 else
+  # Ensure auto-restart remains disabled
+  docker update --restart=no cluster-01-control-plane 2>/dev/null || true
   pass "cluster-01 already exists"
 fi
 
