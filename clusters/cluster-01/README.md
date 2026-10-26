@@ -7,7 +7,7 @@ Single-node Kind cluster running on macOS Apple Silicon via OrbStack.
 | Port | Protocol | Target / Purpose |
 |---|---|---|
 | `:30080` | HTTP / TCP | **Frontend Ingress** (Apache JMeter external load target) |
-| `:30090` | HTTP / TCP | **Beyla eBPF Metrics Exporter** (Scraped by System 3 Central Hub) |
+| `:30090` | HTTP / TCP | **Beyla eBPF Metrics Exporter** (Remote Prometheus scrape endpoint) |
 | `:30000` | HTTP / TCP | Local Grafana Dashboard (via `monitoring/`) |
 | `:30001` | HTTP / TCP | Local Prometheus UI (via `monitoring/`) |
 

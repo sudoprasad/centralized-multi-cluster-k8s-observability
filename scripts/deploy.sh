@@ -1,12 +1,10 @@
 #!/usr/bin/env bash
 # =============================================================================
-# CMCKO — System 1 (macOS MBA M4 with OrbStack)
-# Single Cluster Edge Deployment: cluster-01
-# Architecture: Option A (Pure Edge Node — Prometheus ONLY on System 3)
-# Zero-Instrumentation eBPF Observability (4 L4 + 4 L7 Metrics)
+# CMCKO — System 1 (macOS OrbStack / Kind)
+# Edge Cluster Deployment: cluster-01
+# Zero-code eBPF telemetry with Beyla (4 L4 + 4 L7 metrics)
 #
-# USAGE:
-#   chmod +x scripts/deploy.sh
+# Usage:
 #   ./scripts/deploy.sh
 # =============================================================================
 
@@ -65,7 +63,7 @@ helm upgrade --install beyla grafana/beyla \
   --values "$ROOT/beyla/values.yaml" \
   --wait --timeout 3m
 
-# Apply explicit NodePort 30090 for external Prometheus scraping from System 3
+# Expose metrics on NodePort 30090 for Prometheus scraping
 kubectl apply -f "$ROOT/beyla/beyla-nodeport.yaml"
 pass "Beyla eBPF active with L4 & L7 metrics exposed on NodePort 30090"
 
@@ -76,16 +74,16 @@ MAC_IP=$(ipconfig getifaddr en0 2>/dev/null || ipconfig getifaddr en1 2>/dev/nul
 
 echo ""
 echo "═══════════════════════════════════════════════════════════════════"
-echo "  CMCKO System 1 (macOS OrbStack) Edge Cluster is Ready!"
+echo "  CMCKO System 1 (macOS OrbStack) Edge Cluster is Ready"
 echo "═══════════════════════════════════════════════════════════════════"
-echo "  Cluster:                 cluster-01 (Single cluster on Mac)"
-echo "  Mac LAN IP:              $MAC_IP"
+echo "  Cluster:                 cluster-01"
+echo "  Host LAN IP:             $MAC_IP"
 echo ""
-echo "  [EXTERNAL INGRESS - Apache JMeter Load Target]:"
+echo "  [TRAFFIC INGRESS - JMeter Load Target]:"
 echo "  Target URL:              http://$MAC_IP:30080/"
 echo "                           http://localhost:30080/"
 echo ""
-echo "  [METRICS EGRESS - For System 3 Central Scraper]:"
+echo "  [METRICS SCRAPE ENDPOINT]:"
 echo "  Beyla NodePort:          http://$MAC_IP:30090/metrics"
 echo ""
 echo "  [LOCAL PROMETHEUS & GRAFANA MONITORING]:"

@@ -1,6 +1,6 @@
 {
   "annotations": { "list": [] },
-  "description": "CMCKO — Multi-Cluster Overview: L4 network flows and service topology federated via Thanos from Beyla eBPF across all clusters",
+  "description": "CMCKO — Multi-Cluster Overview: L4 network flows and service topology from Beyla eBPF across clusters",
   "editable": true,
   "graphTooltip": 1,
   "id": null,
@@ -9,7 +9,7 @@
       "collapsed": false,
       "gridPos": { "h": 1, "w": 24, "x": 0, "y": 0 },
       "id": 100,
-      "title": "📊 Service-to-Service Network Traffic (L4 via eBPF across Clusters)",
+      "title": "Service-to-Service Network Traffic (L4 eBPF)",
       "type": "row"
     },
     {
@@ -35,7 +35,7 @@
           "refId": "A"
         }
       ],
-      "title": "Intra-Demo Traffic (bytes/s) — traffic-gen → frontend / backend / auth",
+      "title": "Intra-Cluster Microservice Traffic (bytes/s)",
       "type": "timeseries"
     },
     {
@@ -67,7 +67,7 @@
       "collapsed": false,
       "gridPos": { "h": 1, "w": 24, "x": 0, "y": 9 },
       "id": 101,
-      "title": "🗺️ Service Dependency Map (request flows)",
+      "title": "Service Dependency Map (Request Flows)",
       "type": "row"
     },
     {
@@ -95,7 +95,7 @@
           "instant": true
         }
       ],
-      "title": "Service Communication Table (Multi-Cluster eBPF L4)",
+      "title": "Service Communication Table (Multi-Cluster L4)",
       "type": "table",
       "transformations": [
         { "id": "labelsToFields", "options": { "mode": "columns" } },
@@ -121,7 +121,7 @@
       "collapsed": false,
       "gridPos": { "h": 1, "w": 24, "x": 0, "y": 18 },
       "id": 102,
-      "title": "📈 Cluster-Wide Network Volume",
+      "title": "Cluster-Wide Network Volume",
       "type": "row"
     },
     {

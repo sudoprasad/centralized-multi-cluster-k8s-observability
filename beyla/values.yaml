@@ -1,6 +1,5 @@
-# Grafana Beyla Helm values — Phase 2 (L7 Application Observability + RED Metrics)
-# Target: cluster-01
-# Requires Linux host / WSL2 for userspace eBPF uprobes.
+# Grafana Beyla Helm configuration — L4 Transport & L7 RED Telemetry
+# Target: cluster-01 / cluster-02
 
 config:
   data:

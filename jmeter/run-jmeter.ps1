@@ -17,17 +17,14 @@ if (!(Test-Path $LogDir)) { New-Item -ItemType Directory -Path $LogDir | Out-Nul
 $Timestamp = Get-Date -Format "yyyyMMdd_HHmmss"
 $ResultFile = Join-Path $LogDir "run_$Timestamp.jtl"
 
-$ModeDesc = "Real-World Flash Spike (Human think time: ${ThinkTime}ms ± 50ms)"
-
 Write-Host "═══════════════════════════════════════════════════════════════════" -ForegroundColor Cyan
-Write-Host "  CMCKO Traffic Generator: Real-World Flash Spike (Windows)" -ForegroundColor Cyan
-Write-Host "  (Simulates ERP Result Declaration / E-Commerce Flash Sale)" -ForegroundColor Cyan
+Write-Host "  CMCKO Traffic Generator: Flash Spike Load Test (Windows)" -ForegroundColor Cyan
 Write-Host "═══════════════════════════════════════════════════════════════════" -ForegroundColor Cyan
 Write-Host "  Target Host:       $TargetHost"
 Write-Host "  Target Port:       $TargetPort"
 Write-Host "  Virtual Users:     $Threads threads"
 Write-Host "  Duration:          $Duration seconds"
-Write-Host "  Think Time:        $ThinkTime ms ($ModeDesc)"
+Write-Host "  Think Time:        ${ThinkTime} ms"
 Write-Host "  Test Plan:         $JmxFile"
 Write-Host "  Results:           $ResultFile"
 Write-Host "═══════════════════════════════════════════════════════════════════"

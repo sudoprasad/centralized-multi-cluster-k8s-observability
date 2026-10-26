@@ -4,7 +4,7 @@ This guide covers deployment, daily operation workflows, and architecture for th
 
 ---
 
-## 🏗️ 3-System Distributed Architecture
+## 1. Architecture Overview
 
 ```
   ┌─────────────────────────────────┐       ┌─────────────────────────────────┐
@@ -21,7 +21,6 @@ This guide covers deployment, daily operation workflows, and architecture for th
                                       │
                                       ▼
                        ┌─────────────────────────────┐
-                       │ System 3: Windows (WSL2)    │
                        │ Central Metrics Display Hub │
                        │ • Prometheus Server (:9090) │
                        │ • Grafana Dashboard (:3000) │
@@ -31,7 +30,7 @@ This guide covers deployment, daily operation workflows, and architecture for th
 
 ---
 
-## ⚡ System 1: macOS (OrbStack) — Single Cluster
+## 2. System 1: macOS Edge Cluster
 
 ### Prerequisites:
 - **OrbStack** running with Docker engine enabled.
@@ -44,14 +43,14 @@ This guide covers deployment, daily operation workflows, and architecture for th
 ./scripts/deploy.sh
 ```
 
-### Daily Routine (Pause & Resume):
-#### 🛑 To Stop (Freeze & Free RAM):
+### Daily Operations (Pause & Resume):
+#### Stop Cluster (Free RAM):
 ```bash
 docker stop cluster-01-control-plane
 orbctl stop
 ```
 
-#### ▶️ To Start (Resume where you left off):
+#### Start Cluster (Resume):
 ```bash
 open -a OrbStack
 docker start cluster-01-control-plane
@@ -60,7 +59,7 @@ kubectl get nodes
 
 ---
 
-## ⚡ System 2: Windows (WSL2 k3s) — Edge Cluster
+## 3. System 2: Windows WSL2 Edge Cluster
 
 ### Prerequisites:
 - Windows 10/11 with WSL2 Ubuntu (kernel >= 5.15 for eBPF).
@@ -74,7 +73,7 @@ chmod +x scripts/setup-system2-wsl.sh
 
 ---
 
-## ⚡ Prometheus & Grafana Monitoring (System 1 Local Stack)
+## 4. Local Prometheus & Grafana Stack (System 1)
 
 ### Deployment:
 1. Deploy Prometheus (:30001) and Grafana (:30000) directly on cluster-01:
@@ -90,15 +89,15 @@ chmod +x scripts/setup-system2-wsl.sh
    - **Prometheus UI**: `http://localhost:30001`
    - Pre-loaded with: **`CMCKO — Unified Multi-Cluster eBPF Observability (L4 + L7 + HPA)`**
 
-### External Scrapers (System 3):
-Any external Prometheus scraper (such as System 3) can pull your Beyla eBPF metrics directly from:
-`http://<YOUR_TAILSCALE_IP>:30090/metrics`
+### Remote Metric Scrape Target:
+External Prometheus instances can pull Beyla eBPF metrics directly from:
+`http://<NODE_IP>:30090/metrics`
 
 ---
 
-## 🚀 External Traffic Generation (Apache JMeter)
+## 5. Traffic Generation (Apache JMeter)
 
-Internal mock generators (`traffic-gen`) are disabled (`replicas: 0`). Real HTTP and TCP traffic is generated externally.
+Traffic is generated externally against the microservices:
 
 ### Run via Shell Script (macOS / Linux):
 ```bash
@@ -127,16 +126,16 @@ docker run --rm -i -v "$PWD/jmeter":/jmeter justb4/jmeter:latest \
 
 ---
 
-## 📊 Monitored Metrics (4 L4 + 4 L7)
+## Monitored Telemetry (4 L4 + 4 L7)
 
-### Layer 4 (Network / Transport)
-1. **Throughput**: Bytes transferred (sent / received) via `befa_network_flow_bytes_total`
-2. **Connection Count**: Active microservice communication links
-3. **Packet Count / Retransmissions**: Packets/s and packet loss indicators via `befa_network_flow_stats_tcp_retransmits_total`
-4. **RTT**: Round-Trip Time / network-level latency via `befa_network_flow_stats_tcp_rtt_seconds`
+### Layer 4 (Network & Transport)
+1. **Network Throughput**: Directional bytes sent and received via `beyla_network_flow_bytes_total`
+2. **TCP Socket Table**: Active established and allocated kernel sockets via `node_sockstat_TCP_inuse`
+3. **Service Mesh Flow Matrix**: Directional inter-service flow volume via `beyla_network_flow_bytes_total`
+4. **Interface Bandwidth**: Node network card RX/TX byte rate via `node_network_receive_bytes_total`
 
-### Layer 7 (Application)
-1. **Request Rate**: Requests per second (req/s) per service/endpoint via `http_server_request_duration_seconds_count`
-2. **Latency**: Request duration percentiles (p50 / p99) via `http_server_request_duration_seconds`
-3. **Error Rate**: 4xx client and 5xx server HTTP response codes
-4. **Request / Response Size**: Payload throughput (bytes/s) via `http_server_request_body_size_bytes`
+### Layer 7 (Application RED)
+1. **Request Rate (Rate)**: Requests per second per service via `http_server_request_duration_seconds_count`
+2. **Request Latency (Duration)**: Response time percentiles (p50, p95, p99) via `http_server_request_duration_seconds_bucket`
+3. **Error Rate (Errors)**: 4xx client and 5xx server failure rates via `http_server_request_duration_seconds_count`
+4. **Payload Volumes**: HTTP request and response body transfer volume via `http_server_request_body_size_bytes_sum`

@@ -6,29 +6,29 @@ It scrapes eBPF Beyla metrics directly from your microservices and can also fede
 
 ---
 
-## 🚀 Quick Start
+## Quick Start
 
 ### 1. Deploy Monitoring Stack
 ```bash
 # Monitor local System 1 (Mac):
 ./monitoring/install.sh
 
-# Or monitor BOTH System 1 (Mac) and System 2 (WSL2):
+# Or monitor both System 1 (Mac) and System 2 (WSL2):
 ./monitoring/install.sh <SYSTEM_2_IP>
 ```
 
 ### 2. Access UIs
 - **Grafana Dashboard**: [http://localhost:30000](http://localhost:30000) (Login: `admin` / `admin`)
-  - Auto-loaded with: **`CMCKO — Unified Multi-Cluster eBPF Observability`**
-  - Features: Live Pods Inventory, HPA Autoscaling Curve, 4 L4 base metrics, 4 L7 RED metrics.
+  - Auto-provisioned: **`CMCKO — Unified Multi-Cluster eBPF Observability`**
+  - Panels: Live Pods, HPA Autoscaling State, 4 L4 Transport metrics, 4 L7 RED metrics.
 - **Prometheus UI**: [http://localhost:30001](http://localhost:30001)
-- **Raw Beyla Metrics Egress**: [http://localhost:30090/metrics](http://localhost:30090/metrics)
+- **Beyla Metrics Endpoint**: [http://localhost:30090/metrics](http://localhost:30090/metrics)
 
 ---
 
-## 🛑 Teardown / Uninstall
+## Teardown / Uninstall
 
-To remove Prometheus and Grafana and free ~400MB RAM:
+To remove the monitoring stack:
 ```bash
 ./monitoring/uninstall.sh
 ```

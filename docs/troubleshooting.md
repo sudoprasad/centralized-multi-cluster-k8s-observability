@@ -73,7 +73,7 @@ and increase memory to at least 4GB.
 
 ```bash
 bash scripts/teardown.sh
-bash scripts/setup-phase0.sh
+bash scripts/deploy.sh
 ```
 
 ---
@@ -82,13 +82,13 @@ bash scripts/setup-phase0.sh
 
 ```bash
 # All pods across all namespaces
-kubectl get pods --all-namespaces
+kubectl get pods -A
 
 # Beyla logs
 kubectl logs -n beyla -l app.kubernetes.io/name=beyla -f
 
-# Demo app traffic-gen logs
-kubectl logs -n demo -l app=traffic-gen -f
+# Target microservice logs
+kubectl logs -n demo -l app=frontend -f
 
 # Port-forward Prometheus locally (alternative to NodePort)
 kubectl port-forward -n monitoring svc/prometheus-server 9090:80

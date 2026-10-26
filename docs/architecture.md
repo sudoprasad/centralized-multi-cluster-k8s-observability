@@ -1,22 +1,22 @@
 # CMCKO Architecture & End-to-End Data Flow Specification
 
-This document serves as the **single authoritative source of truth** for the Centralized Multi-Cluster Kubernetes Observability (CMCKO) architecture. It details the complete end-to-end data flow: from kernel-level eBPF packet inspection and zero-code microservices uprobes, to centralized Prometheus metric collection and unified Grafana dashboard visualization.
+This document outlines the architecture for the Centralized Multi-Cluster Kubernetes Observability (CMCKO) platform, detailing the end-to-end data flow: from kernel-level eBPF packet inspection and zero-code microservice uprobes, to centralized Prometheus metric collection and unified Grafana dashboard visualization.
 
 ---
 
-## 🔑 Key Design Principles
+## Key Design Principles
 
-1. **Zero Instrumentation**: Microservices (`frontend`, `backend`, `auth`) are stock Go containers with **no OpenTelemetry SDK**, **no bytecode agents**, and **zero code changes**.
-2. **eBPF Kernel Passivity**: Grafana Beyla attaches non-intrusively to kernel tracepoints, socket operations (`sock_ops`, `tc`), and userspace uprobes.
-3. **Pure Edge Nodes**: Edge clusters run no Prometheus TSDB engines, minimizing CPU and RAM overhead on production hosts.
-4. **External Client Traffic**: In-cluster traffic generators are deactivated (`replicas: 0`). External load is injected via **Apache JMeter** hitting NodePort `30080` (simulating real-world flash spikes like ERP result declaration or flash sales).
-5. **Decoupled Local Observability**: A dedicated local Prometheus and Grafana instance can be installed on System 1 (`monitoring/`) for direct observability, HPA verification, and testing without impacting external scrapers.
+1. **Zero Instrumentation**: Microservices (`frontend`, `backend`, `auth`) are stock Go containers with no OpenTelemetry SDK, bytecode agents, or code modifications.
+2. **Passive eBPF Tracing**: Grafana Beyla attaches non-intrusively to kernel tracepoints, socket operations (`sock_ops`, `tc`), and userspace uprobes.
+3. **Lightweight Edge Nodes**: Edge clusters run no Prometheus TSDB engines, minimizing CPU and RAM overhead on production hosts.
+4. **Realistic Load Testing**: In-cluster traffic generators are deactivated (`replicas: 0`). External load is driven via Apache JMeter hitting NodePort `30080` (simulating real-world traffic surges).
+5. **Decoupled Local Observability**: A dedicated Prometheus and Grafana instance can be installed on System 1 (`monitoring/`) for direct verification and testing without interfering with external scrapers.
 
 ---
 
-## 🏗️ 1. Distributed Topology Overview (Option A Model)
+## 1. System Topology Overview
 
-The architecture distributes responsibilities across **three physical/virtual machines** interconnected via a standard local area network (LAN / Tailscale):
+The architecture distributes responsibilities across machines interconnected via LAN or Tailscale:
 
 ```
                        ┌──────────────────────────────────────────────┐
@@ -35,7 +35,6 @@ The architecture distributes responsibilities across **three physical/virtual ma
    │  - frontend (:8080) [NodePort :30080]   │  │  - frontend (:8080) [NodePort :30080]   │
    │  - backend  (:5678) [ClusterIP]         │  │  - backend  (:5678) [ClusterIP]         │
    │  - auth     (:7070) [ClusterIP]         │  │  - auth     (:7070) [ClusterIP]         │
-   │  *(internal traffic-gen: replicas: 0)*  │  │  *(internal traffic-gen: replicas: 0)*  │
    │  - HPA: 1 -> 5 Replicas (Target 50% CPU)│  │                                         │
    │                                         │  │                                         │
    │  [Telemetry Engine]                     │  │  [Telemetry Engine]                     │
@@ -72,24 +71,22 @@ The architecture distributes responsibilities across **three physical/virtual ma
 
 ---
 
-## 📐 2. Core Architecture Rules & Design Decisions
+## 2. Core Architectural Decisions
 
-### Rule 1: Option A Centralized Pull Architecture
-- **Zero Observability Footprint on Edge Clusters**: Systems 1 and 2 run **no** heavy Prometheus TSDB engines by default. They act strictly as **telemetry producers**.
-- **Centralized Pull Model**: Any central monitoring hub (such as System 3) pulls metrics over HTTP (`:30090/metrics`) every 5 seconds, attaching appropriate cluster labels.
+### Centralized Pull Architecture
+- **Zero Footprint on Edge Nodes**: Edge clusters run no Prometheus TSDB engines, remaining purely focused on workload execution.
+- **Centralized Metrics Aggregation**: The central monitoring hub scrapes endpoints over HTTP (`:30090/metrics`) every 5 seconds, attaching appropriate cluster labels.
 
-### Rule 2: Zero Application Code Instrumentation
-- Target microservice containers (`frontend`, `backend`, `auth`) are stock, unmodified Go binaries (`hashicorp/http-echo`).
-- No OpenTelemetry SDKs, no language agents, and no code edits are injected.
-- Telemetry is passively gathered directly from Linux kernel hooks using **Grafana Beyla eBPF**.
+### Zero-Code Application Instrumentation
+- Microservices (`frontend`, `backend`, `auth`) are standard Go binaries.
+- No SDKs or language agents are required; all telemetry is gathered transparently from kernel tracepoints and uprobes via Grafana Beyla.
 
-### Rule 3: External Traffic Generation (Apache JMeter)
-- The in-cluster mock generator (`traffic-gen`) is deactivated (`replicas: 0`).
-- True external load (concurrency, think times, realistic HTTP requests, and intentional 4xx error paths) is injected via **Apache JMeter** hitting NodePort `30080`.
+### External Load Generation
+- Mock in-cluster load generation is disabled.
+- Real HTTP load (concurrency, ramp-up, realistic think times) is delivered from outside the cluster via Apache JMeter.
 
-### Rule 4: Dedicated Local Monitoring Subsystem (System 1)
-- For direct monitoring, HPA verification, and standalone testing, System 1 runs local Prometheus (`:30001`) and Grafana (`:30000`) instances via `monitoring/`.
-- This subsystem provides full live observability of L4/L7 telemetry and can be cleanly uninstalled at any time.
+### Local Observability on Edge Nodes
+- System 1 includes a lightweight, modular Prometheus (`:30001`) and Grafana (`:30000`) stack via `monitoring/` for isolated verification and testing.
 
 ---
 
@@ -123,7 +120,7 @@ sequenceDiagram
     Note over eBPF,BeylaSvc: Step 4: Metric Aggregation
     eBPF->>BeylaSvc: Aggregate counters/histograms on :30090/metrics
 
-    Note over BeylaSvc,Prom3: Step 5: Centralized Pull Scraping (Option A)
+    Note over BeylaSvc,Prom3: Step 5: Centralized Metric Scraping
     Prom3->>BeylaSvc: HTTP GET http://<EDGE_IP>:30090/metrics (every 5s)
     BeylaSvc-->>Prom3: Time-Series Sample Payload
     Prom3->>Prom3: Store with label {cluster="cluster-01|02"}
@@ -136,7 +133,7 @@ sequenceDiagram
 
 ---
 
-## 📊 4. Detailed Telemetry Specification: The 4+4 Base Metrics
+## 4. Telemetry Specification: 4 L4 and 4 L7 Metrics
 
 ### Layer 4: Network & Transport Observability
 Captured directly from Linux network sockets, TCP state transitions, and node NIC interfaces:
@@ -162,7 +159,7 @@ Captured via userspace eBPF uprobes attached to the application binary runtime:
 
 ---
 
-## 🖥️ 5. Machine Breakdown & Port Mapping
+## 5. Environment & Port Mapping
 
 | System | Role | Technology Stack | Inbound Ports | Outbound Access |
 |---|---|---|---|---|
@@ -172,12 +169,12 @@ Captured via userspace eBPF uprobes attached to the application binary runtime:
 
 ---
 
-## 🚀 6. Execution Command Reference
+## 6. Execution Command Reference
 
 ### On System 1 (macOS):
 ```bash
 # 1. Deploy the edge cluster:
-./scripts/deploy-system1-mac.sh
+./scripts/deploy.sh
 
 # 2. Deploy local Prometheus (:30001) & Grafana (:30000):
 ./monitoring/install.sh
@@ -196,16 +193,13 @@ http://localhost:30000 (admin / admin)
 
 # Open Prometheus:
 http://localhost:30001
-
-# Note: External scrapers (System 3) scrape directly via Tailscale:
-# http://<SYSTEM_1_TAILSCALE_IP>:30090/metrics
 ```
 
 ### Running Load Tests (Apache JMeter):
 ```bash
-# Real-World Flash Spike Scenario (35 users, 15s surge, 200ms think time):
+# Flash spike load test (35 users, 15s ramp-up, 200ms think time):
 ./jmeter/run-jmeter.sh <SYSTEM_1_IP> 30080 35 300 15 200
 
-# High-Stress Flash Spike (50 users, 15s surge, 150ms think time):
+# High-stress load test (50 users, 15s ramp-up, 150ms think time):
 ./jmeter/run-jmeter.sh <SYSTEM_1_IP> 30080 50 300 15 150
 ```

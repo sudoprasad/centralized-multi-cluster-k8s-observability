@@ -9,7 +9,7 @@ visualization and cross-cluster comparison.
 
 ---
 
-## 🏗️ 3-System Distributed Architecture
+## Architecture Overview
 
 ```
   ┌─────────────────────────────────┐       ┌─────────────────────────────────┐
@@ -26,7 +26,6 @@ visualization and cross-cluster comparison.
                                       │
                                       ▼
                        ┌─────────────────────────────┐
-                       │ System 3: Windows (WSL2)    │
                        │ Central Metrics Display Hub │
                        │ • Prometheus Server (:9090) │
                        │ • Grafana Dashboard (:3000) │
@@ -36,42 +35,42 @@ visualization and cross-cluster comparison.
 
 ---
 
-## ⚡ Quick Start
+## Quick Start
 
-### 1. System 1: macOS (OrbStack Single Cluster)
+### 1. System 1: macOS Edge Cluster
 ```bash
-# Deploys single cluster-01 on OrbStack with 4 L4 + 4 L7 Beyla metrics:
+# Deploys cluster-01 on OrbStack with 4 L4 + 4 L7 Beyla metrics:
 ./scripts/deploy.sh
 ```
 
 ### 2. External Traffic (Apache JMeter)
 ```bash
-# Generate high-stress load (20-30 threads, 0ms think time, matching k6 throughput):
+# High-stress concurrency test (30 threads, 0ms think time):
 ./jmeter/run-jmeter.sh localhost 30080 30 300 5 0
 
-# Or run realistic user simulation (15 threads, 200ms think time):
+# Realistic user simulation (15 threads, 200ms think time):
 ./jmeter/run-jmeter.sh localhost 30080 15 300 5 200
 ```
 
-### 3. System 2: Windows (WSL2 k3s Edge Cluster)
+### 3. System 2: Windows WSL2 Edge Cluster
 ```bash
 ./scripts/setup-system2-wsl.sh
 ```
 
-### 4. Local Prometheus & Grafana Monitoring (System 1)
+### 4. Local Prometheus & Grafana Stack (System 1)
 ```bash
-# Deploys Prometheus (:30001) & Grafana (:30000) with Live Pods, HPA & L4/L7 Dashboards:
+# Deploys local Prometheus (:30001) & Grafana (:30000):
 ./monitoring/install.sh
 
 # Open Grafana: http://localhost:30000 (admin / admin)
 # Open Prometheus: http://localhost:30001
-# Any external system (e.g. System 3) can also scrape your Beyla metrics directly at:
+# External Prometheus metrics endpoint:
 # http://<YOUR_TAILSCALE_IP>:30090/metrics
 ```
 
 ---
 
-## 📊 Monitored Metrics (Pod Lifecycle, HPA Autoscaling, 4 L4 + 4 L7)
+## Monitored Telemetry (4 L4 + 4 L7)
 
 | Category | Telemetry Metric | Scraped PromQL Query | Description / Purpose |
 | :--- | :--- | :--- | :--- |
@@ -88,6 +87,8 @@ visualization and cross-cluster comparison.
 
 ---
 
-## 📖 Documentation
+## Documentation
 - [Deployment & Operations Guide](docs/deployment.md)
-- [Architecture Manifesto](docs/architecture.md)
+- [Architecture & Data Flow Specification](docs/architecture.md)
+- [Troubleshooting Guide](docs/troubleshooting.md)
+

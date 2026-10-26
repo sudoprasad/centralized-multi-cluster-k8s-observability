@@ -1,6 +1,5 @@
-# kind cluster configuration for cluster-01
-# Single-node cluster for Phase 0 proof of concept
-# Uses a single control-plane node to minimise resource usage on limited hardware
+# Kind cluster configuration for cluster-01
+# Single-node control-plane configuration for local development and edge telemetry
 
 kind: Cluster
 apiVersion: kind.x-k8s.io/v1alpha4

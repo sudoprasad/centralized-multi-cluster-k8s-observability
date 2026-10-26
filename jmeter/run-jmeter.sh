@@ -1,19 +1,19 @@
 #!/usr/bin/env bash
 # =============================================================================
-# CMCKO — JMeter Load Generator Runner
-# Real-World Flash Spike Simulation (ERP Result Declaration / Flash Sale)
+# CMCKO — JMeter Load Generator
+# Simulates flash traffic spikes (concurrency, ramp-up, and think time)
 #
-# USAGE:
+# Usage:
 #   ./jmeter/run-jmeter.sh [TARGET_HOST] [PORT] [THREADS] [DURATION_SECS] [RAMPUP_SECS] [THINK_TIME_MS]
 #
-# EXAMPLES:
-#   # Real-World Flash Spike (35 users, 15s surge, 200ms think time):
+# Examples:
+#   # Standard flash spike test (35 users, 15s ramp-up, 200ms think time):
 #   ./jmeter/run-jmeter.sh 100.110.71.94 30080 35 300 15 200
 #
-#   # Massive Flash Spike (50 users, 15s surge, 150ms think time):
+#   # Heavy stress test (50 users, 15s ramp-up, 150ms think time):
 #   ./jmeter/run-jmeter.sh 100.110.71.94 30080 50 300 15 150
 #
-#   # Local Mac cluster:
+#   # Local test:
 #   ./jmeter/run-jmeter.sh localhost 30080
 # =============================================================================
 
@@ -31,18 +31,15 @@ mkdir -p "$LOG_DIR"
 TIMESTAMP=$(date +%Y%m%d_%H%M%S)
 RESULT_FILE="$LOG_DIR/run_${TIMESTAMP}.jtl"
 
-MODE_DESC="Real-World Flash Spike (Human think time: ${THINK_TIME}ms ± 50ms)"
-
 echo "═══════════════════════════════════════════════════════════════════"
-echo "  CMCKO Traffic Generator: Real-World Flash Spike Scenario"
-echo "  (Simulates ERP Result Declaration / E-Commerce Flash Sale)"
+echo "  CMCKO Traffic Generator: Flash Spike Load Test"
 echo "═══════════════════════════════════════════════════════════════════"
 echo "  Target Host:       $TARGET_HOST"
 echo "  Target Port:       $TARGET_PORT"
 echo "  Virtual Users:     $THREADS threads"
 echo "  Ramp-Up:           $RAMPUP seconds"
 echo "  Duration:          $DURATION seconds"
-echo "  Think Time:        ${THINK_TIME} ms ($MODE_DESC)"
+echo "  Think Time:        ${THINK_TIME} ms"
 echo "  Test Plan:         $JMX_FILE"
 echo "  Results:           $RESULT_FILE"
 echo "═══════════════════════════════════════════════════════════════════"

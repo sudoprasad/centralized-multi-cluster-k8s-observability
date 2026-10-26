@@ -19,7 +19,7 @@
         "y": 0
       },
       "id": 100,
-      "title": "\ud83c\udf1f System Health & Autoscaling Overview (Multi-Cluster KPI)",
+      "title": "System Health & Autoscaling Overview",
       "type": "row"
     },
     {
@@ -88,7 +88,7 @@
           "refId": "A"
         }
       ],
-      "title": "System 1 (Mac MBA M4)",
+      "title": "System 1 (macOS Edge)",
       "type": "stat"
     },
     {
@@ -157,7 +157,7 @@
           "refId": "A"
         }
       ],
-      "title": "System 2 (WSL2 k3s)",
+      "title": "System 2 (WSL2 Edge)",
       "type": "stat"
     },
     {
@@ -215,7 +215,7 @@
           "refId": "A"
         }
       ],
-      "title": "Total Live Pods (Demo)",
+      "title": "Total Live Pods",
       "type": "stat"
     },
     {
@@ -277,7 +277,7 @@
           "refId": "A"
         }
       ],
-      "title": "Frontend Replicas (HPA)",
+      "title": "Frontend Replicas",
       "type": "stat"
     },
     {
@@ -322,7 +322,7 @@
           "refId": "A"
         }
       ],
-      "title": "Global Request Rate (RPS)",
+      "title": "Total Request Rate (RPS)",
       "type": "stat"
     },
     {
@@ -384,7 +384,7 @@
           "refId": "A"
         }
       ],
-      "title": "Kernel Active TCP Sockets",
+      "title": "Active TCP Sockets",
       "type": "stat"
     },
     {
@@ -396,7 +396,7 @@
         "y": 5
       },
       "id": 101,
-      "title": "\ud83d\ude80 Kubernetes Pod Lifecycle & HPA Autoscaling Tracking",
+      "title": "Kubernetes Pod Lifecycle & Autoscaling",
       "type": "row"
     },
     {
@@ -477,7 +477,7 @@
           "refId": "D"
         }
       ],
-      "title": "Horizontal Pod Autoscaler (HPA) Controller State Machine",
+      "title": "HPA Controller State (Current vs Desired Replicas)",
       "type": "timeseries"
     },
     {
@@ -546,7 +546,7 @@
           "refId": "C"
         }
       ],
-      "title": "Microservice Deployment Readiness & Pod Lifecycle Phase",
+      "title": "Deployment Readiness & Pod Phase Distribution",
       "type": "timeseries"
     },
     {
@@ -665,7 +665,7 @@
           "refId": "A"
         }
       ],
-      "title": "Active Discovered Pods Inventory (Real-Time eBPF Tracking)",
+      "title": "Discovered Pod Inventory",
       "transformations": [
         {
           "id": "organize",
@@ -720,7 +720,7 @@
         "y": 20
       },
       "id": 102,
-      "title": "\ud83c\udf10 Layer 4 (Transport / Network): 4 Base Metrics",
+      "title": "Layer 4 (Transport & Network) Metrics",
       "type": "row"
     },
     {
@@ -780,7 +780,7 @@
           "refId": "B"
         }
       ],
-      "title": "L4 Metric 1: Network Throughput \u2014 Byte Bandwidth (Sent vs Received)",
+      "title": "L4 Throughput: Bytes Sent vs Received",
       "type": "timeseries"
     },
     {
@@ -845,7 +845,7 @@
           "refId": "C"
         }
       ],
-      "title": "L4 Metric 2: TCP Connection State \u2014 Active Kernel Sockets & Allocation",
+      "title": "L4 TCP Connection State: In-Use vs Allocated Sockets",
       "type": "timeseries"
     },
     {
@@ -909,7 +909,7 @@
           "refId": "A"
         }
       ],
-      "title": "L4 Metric 3: Inter-Service Service Mesh Flow Matrix (Source \u2794 Destination)",
+      "title": "L4 Inter-Service Flow Matrix (Bytes/s)",
       "type": "bargauge"
     },
     {
@@ -967,7 +967,7 @@
           "refId": "B"
         }
       ],
-      "title": "L4 Metric 4: Node Physical NIC Network Bandwidth (eth0 Ingress vs Egress)",
+      "title": "L4 Node Network Interface Bandwidth (eth0)",
       "type": "timeseries"
     },
     {
@@ -979,7 +979,7 @@
         "y": 37
       },
       "id": 103,
-      "title": "\u26a1 Layer 7 (Application): 4 Base RED Metrics",
+      "title": "Layer 7 (Application & RED) Metrics",
       "type": "row"
     },
     {
@@ -1027,7 +1027,7 @@
           "refId": "A"
         }
       ],
-      "title": "L7 Metric 1: Request Rate (RPS per Microservice)",
+      "title": "L7 Request Rate (RPS per Service)",
       "type": "timeseries"
     },
     {
@@ -1092,7 +1092,7 @@
           "refId": "C"
         }
       ],
-      "title": "L7 Metric 2: Request Latency Spread (p50 / p95 / p99 Percentiles)",
+      "title": "L7 Latency Spread (p50 / p95 / p99)",
       "type": "timeseries"
     },
     {
@@ -1144,7 +1144,7 @@
           "refId": "B"
         }
       ],
-      "title": "L7 Metric 3: Error Rate (4xx vs 5xx Error Codes)",
+      "title": "L7 Error Rate (4xx vs 5xx)",
       "type": "timeseries"
     },
     {
@@ -1248,7 +1248,7 @@
           "refId": "B"
         }
       ],
-      "title": "L7 Metric 4: Payload Volumes (Request & Response Body Size)",
+      "title": "L7 Payload Volumes (Request & Response Bytes/s)",
       "type": "timeseries"
     },
     {
@@ -1260,7 +1260,7 @@
         "y": 54
       },
       "id": 104,
-      "title": "\ud83d\udccb Cross-Cluster Microservices Communication Topology",
+      "title": "Microservices Communication Topology",
       "type": "row"
     },
     {
@@ -1383,7 +1383,7 @@
           "refId": "A"
         }
       ],
-      "title": "Live Inter-Service HTTP Endpoint Communication Matrix",
+      "title": "Live HTTP Endpoint Communication Matrix",
       "transformations": [
         {
           "id": "organize",

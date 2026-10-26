@@ -1,7 +1,6 @@
 #!/usr/bin/env bash
 # =============================================================================
-# Uninstall Local Learning Monitoring from System 1
-# Removes Prometheus and Grafana from cluster-01, reverting it to a pure edge node.
+# Uninstall Local Prometheus and Grafana Monitoring from System 1
 # =============================================================================
 
 set -euo pipefail
@@ -18,4 +17,4 @@ helm uninstall prometheus -n monitoring 2>/dev/null || true
 kubectl delete configmap grafana-dashboards-cmcko -n monitoring 2>/dev/null || true
 kubectl delete namespace monitoring 2>/dev/null || true
 
-pass "Local monitoring uninstalled. cluster-01 is now a pure Option A edge node!"
+pass "Local monitoring stack uninstalled successfully."
